@@ -5,13 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 
 /**
  * DTO de entrada para el registro de pacientes (AuthController -> registerPatient()).
- *
  * No incluye "role": el registro publico corresponde unicamente a pacientes
- * (ver seccion 8, AuthService.registerPatient()). El rol PATIENT se asigna
  * internamente en la capa service, no lo decide el cliente de la API.
- *
- * Solo contiene validaciones sintacticas basicas (@NotBlank, @Email),
- * segun la responsabilidad del controller definida en la seccion 3.
  */
 public class RegisterRequest {
 

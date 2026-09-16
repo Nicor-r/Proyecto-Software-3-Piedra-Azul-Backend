@@ -6,8 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 /**
  * DTO de entrada para autenticacion (AuthController -> login()).
  *
- * Solo contiene validaciones sintacticas basicas (@NotBlank, @Email),
- * segun la responsabilidad del controller definida en la seccion 3.
+ * Solo contiene validaciones sintacticas basicas (@NotBlank, @Email).
  */
 public class LoginRequest {
 

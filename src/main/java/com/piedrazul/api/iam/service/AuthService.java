@@ -19,7 +19,6 @@ import java.util.UUID;
  *
  * Depende UNICAMENTE de las interfaces aprobadas (UserRepository,
  * PasswordHasher, TokenProvider). No conoce JPA, SQLite, BCrypt ni JJWT
- * directamente (seccion 3 y 19 del documento arquitectonico).
  */
 @Service
 public class AuthService {

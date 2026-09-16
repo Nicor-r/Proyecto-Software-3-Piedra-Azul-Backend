@@ -9,10 +9,6 @@ import com.piedrazul.api.iam.domain.User;
  * AuthService depende UNICAMENTE de esta interfaz y no conoce JWT, JJWT
  * ni ningun detalle de implementacion.
  *
- * Punto de extension mencionado en la seccion 17 del documento
- * arquitectonico: en el segundo corte, esta interfaz permitira introducir
- * un mecanismo basado en Keycloak sin modificar AuthService.
- *
  * Alcance actual aprobado: unicamente las tres operaciones necesarias
  * para registro/login en este corte. No incluye getRoleFromToken().
  */

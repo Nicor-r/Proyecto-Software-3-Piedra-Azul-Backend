@@ -3,15 +3,10 @@ package com.piedrazul.api.iam.domain;
 import java.util.Objects;
 
 /**
- * Entidad de dominio User (POJO puro).
- * Atributos definidos exactamente segun el documento arquitectonico
- * (seccion 7): id, email, password, role.
- *
+ * Entidad de dominio User.
  * IMPORTANTE: "password" almacena el HASH BCrypt de la contrasena,
  * nunca texto plano. La responsabilidad de generar ese hash es de
  * PasswordHasher (capa repository/infrastructure), no de esta clase.
- *
- * Sin anotaciones de Spring, JPA ni ninguna dependencia de infraestructura.
  */
 public class User {
 
