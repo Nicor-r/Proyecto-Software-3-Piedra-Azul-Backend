@@ -30,6 +30,12 @@ public class AuthService {
      */
     private static final String INVALID_CREDENTIALS_MESSAGE = "Credenciales invalidas";
 
+    /**
+     * Mensaje usado cuando password y confirmPassword no coinciden
+     * durante el registro.
+     */
+    private static final String PASSWORDS_DO_NOT_MATCH_MESSAGE = "Las contrasenas no coinciden";
+
     private final UserRepository userRepository;
     private final PasswordHasher passwordHasher;
     private final TokenProvider tokenProvider;
@@ -46,16 +52,23 @@ public class AuthService {
      * Registra un nuevo paciente.
      *
      * Recibe un User parcial (tipicamente proveniente de
-     * UserMapper.toDomain(RegisterRequest)), con id y role en null.
-     * Este metodo completa la identidad (UUID), asigna el rol PATIENT,
-     * hashea la contrasena y persiste el usuario.
+     * UserMapper.toDomain(RegisterRequest)), con id y role en null, y
+     * confirmPassword como parametro separado (nunca forma parte de User).
+     *
+     * Flujo: (1) email duplicado, (2) password == confirmPassword,
+     * (3) generar UUID, (4) asignar PATIENT, (5) hashear password,
+     * (6) persistir.
      *
      * No retorna token: el paciente debe autenticarse por separado
      * mediante login().
      */
-    public void registerPatient(User user) {
+    public void registerPatient(User user, String confirmPassword) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new AuthException("El correo ya se encuentra registrado");
+        }
+
+        if (!user.getPassword().equals(confirmPassword)) {
+            throw new AuthException(PASSWORDS_DO_NOT_MATCH_MESSAGE);
         }
 
         user.setId(UUID.randomUUID().toString());

@@ -32,6 +32,7 @@ import com.piedrazul.api.iam.repository.UserRepository;
 class AuthServiceTest {
 
     private static final String CREDENCIALES_INVALIDAS = "Credenciales invalidas";
+    private static final String CONTRASENAS_NO_COINCIDEN = "Las contrasenas no coinciden";
 
     @Mock
     private UserRepository userRepository;
@@ -53,12 +54,13 @@ class AuthServiceTest {
 
     @Test
     void registerPatient_correoNuevo_registraCorrectamente() {
-        User newUser = new User(null, "nuevo@test.com", "rawPassword123", null);
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
 
         when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
         when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
 
-        authService.registerPatient(newUser);
+        authService.registerPatient(newUser, "rawPassword123");
 
         verify(userRepository, times(1)).existsByEmail("nuevo@test.com");
         verify(passwordHasher, times(1)).hash("rawPassword123");
@@ -66,13 +68,62 @@ class AuthServiceTest {
     }
 
     @Test
+    void registerPatient_conNuevosCampos_seAsignanCorrectamente() {
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
+
+        when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
+        when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
+
+        authService.registerPatient(newUser, "rawPassword123");
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+
+        User savedUser = userCaptor.getValue();
+        assertThat(savedUser.getNombreCompleto()).isEqualTo("Ana Torres");
+        assertThat(savedUser.getNumeroIdentificacion()).isEqualTo("123456789");
+        assertThat(savedUser.getNumeroTelefonico()).isEqualTo("3001234567");
+    }
+
+    @Test
+    void registerPatient_passwordYConfirmPasswordCoinciden_noLanzaExcepcion() {
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
+
+        when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
+        when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
+
+        authService.registerPatient(newUser, "rawPassword123");
+
+        verify(userRepository, times(1)).save(any(User.class));
+    }
+
+    @Test
+    void registerPatient_passwordYConfirmPasswordDiferentes_lanzaAuthException() {
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
+
+        when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
+
+        AuthException exception = assertThrows(AuthException.class,
+                () -> authService.registerPatient(newUser, "otraPassword456"));
+
+        assertThat(exception.getMessage()).isEqualTo(CONTRASENAS_NO_COINCIDEN);
+
+        verify(passwordHasher, never()).hash(anyString());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
     void registerPatient_correoYaRegistrado_lanzaAuthException() {
-        User existingEmailUser = new User(null, "existente@test.com", "rawPassword123", null);
+        User existingEmailUser = new User(null, "Carlos Ruiz", "existente@test.com", "987654321",
+                "3009876543", "rawPassword123", null);
 
         when(userRepository.existsByEmail("existente@test.com")).thenReturn(true);
 
         AuthException exception = assertThrows(AuthException.class,
-                () -> authService.registerPatient(existingEmailUser));
+                () -> authService.registerPatient(existingEmailUser, "rawPassword123"));
 
         assertThat(exception.getMessage()).isEqualTo("El correo ya se encuentra registrado");
 
@@ -82,12 +133,13 @@ class AuthServiceTest {
 
     @Test
     void registerPatient_generaIdParaElUsuario() {
-        User newUser = new User(null, "nuevo@test.com", "rawPassword123", null);
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
 
         when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
         when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
 
-        authService.registerPatient(newUser);
+        authService.registerPatient(newUser, "rawPassword123");
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
@@ -99,12 +151,13 @@ class AuthServiceTest {
 
     @Test
     void registerPatient_asignaRolPatient() {
-        User newUser = new User(null, "nuevo@test.com", "rawPassword123", null);
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
 
         when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
         when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
 
-        authService.registerPatient(newUser);
+        authService.registerPatient(newUser, "rawPassword123");
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
@@ -115,30 +168,33 @@ class AuthServiceTest {
 
     @Test
     void registerPatient_pasaPasswordOriginalAPasswordHasher() {
-        User newUser = new User(null, "nuevo@test.com", "rawPassword123", null);
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
 
         when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
         when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
 
-        authService.registerPatient(newUser);
+        authService.registerPatient(newUser, "rawPassword123");
 
         verify(passwordHasher, times(1)).hash("rawPassword123");
     }
 
     @Test
     void registerPatient_guardaUsuarioConPasswordHasheado() {
-        User newUser = new User(null, "nuevo@test.com", "rawPassword123", null);
+        User newUser = new User(null, "Ana Torres", "nuevo@test.com", "123456789", "3001234567",
+                "rawPassword123", null);
 
         when(userRepository.existsByEmail("nuevo@test.com")).thenReturn(false);
         when(passwordHasher.hash("rawPassword123")).thenReturn("hashedPassword123");
 
-        authService.registerPatient(newUser);
+        authService.registerPatient(newUser, "rawPassword123");
 
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
 
         User savedUser = userCaptor.getValue();
         assertThat(savedUser.getPassword()).isEqualTo("hashedPassword123");
+        assertThat(savedUser.getPassword()).isNotEqualTo("rawPassword123");
     }
 
     // ===================== login() =====================
@@ -149,7 +205,8 @@ class AuthServiceTest {
         request.setEmail("usuario@test.com");
         request.setPassword("rawPassword123");
 
-        User existingUser = new User("user-id-1", "usuario@test.com", "hashedPassword123", RoleEnum.PATIENT);
+        User existingUser = new User("user-id-1", "Usuario Test", "usuario@test.com", "111222333",
+                "3000000000", "hashedPassword123", RoleEnum.PATIENT);
 
         when(userRepository.findByEmail("usuario@test.com")).thenReturn(Optional.of(existingUser));
         when(passwordHasher.matches("rawPassword123", "hashedPassword123")).thenReturn(true);
@@ -184,7 +241,8 @@ class AuthServiceTest {
         request.setEmail("usuario@test.com");
         request.setPassword("wrongPassword");
 
-        User existingUser = new User("user-id-1", "usuario@test.com", "hashedPassword123", RoleEnum.PATIENT);
+        User existingUser = new User("user-id-1", "Usuario Test", "usuario@test.com", "111222333",
+                "3000000000", "hashedPassword123", RoleEnum.PATIENT);
 
         when(userRepository.findByEmail("usuario@test.com")).thenReturn(Optional.of(existingUser));
         when(passwordHasher.matches("wrongPassword", "hashedPassword123")).thenReturn(false);
@@ -203,7 +261,8 @@ class AuthServiceTest {
         request.setEmail("usuario@test.com");
         request.setPassword("rawPassword123");
 
-        User existingUser = new User("user-id-1", "usuario@test.com", "hashedPassword123", RoleEnum.PATIENT);
+        User existingUser = new User("user-id-1", "Usuario Test", "usuario@test.com", "111222333",
+                "3000000000", "hashedPassword123", RoleEnum.PATIENT);
 
         when(userRepository.findByEmail("usuario@test.com")).thenReturn(Optional.of(existingUser));
         when(passwordHasher.matches("rawPassword123", "hashedPassword123")).thenReturn(true);
@@ -220,7 +279,8 @@ class AuthServiceTest {
         request.setEmail("usuario@test.com");
         request.setPassword("rawPassword123");
 
-        User existingUser = new User("user-id-1", "usuario@test.com", "hashedPassword123", RoleEnum.PATIENT);
+        User existingUser = new User("user-id-1", "Usuario Test", "usuario@test.com", "111222333",
+                "3000000000", "hashedPassword123", RoleEnum.PATIENT);
 
         when(userRepository.findByEmail("usuario@test.com")).thenReturn(Optional.of(existingUser));
         when(passwordHasher.matches("rawPassword123", "hashedPassword123")).thenReturn(true);
@@ -237,7 +297,8 @@ class AuthServiceTest {
         request.setEmail("usuario@test.com");
         request.setPassword("wrongPassword");
 
-        User existingUser = new User("user-id-1", "usuario@test.com", "hashedPassword123", RoleEnum.PATIENT);
+        User existingUser = new User("user-id-1", "Usuario Test", "usuario@test.com", "111222333",
+                "3000000000", "hashedPassword123", RoleEnum.PATIENT);
 
         when(userRepository.findByEmail("usuario@test.com")).thenReturn(Optional.of(existingUser));
         when(passwordHasher.matches(eq("wrongPassword"), eq("hashedPassword123"))).thenReturn(false);

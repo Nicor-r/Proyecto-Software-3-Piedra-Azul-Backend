@@ -34,7 +34,10 @@ public class UserMapper {
         }
         return new User(
                 null,
+                request.getNombreCompleto(),
                 request.getEmail(),
+                request.getNumeroIdentificacion(),
+                request.getNumeroTelefonico(),
                 request.getPassword(),
                 null
         );

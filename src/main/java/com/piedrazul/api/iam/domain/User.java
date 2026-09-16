@@ -11,16 +11,23 @@ import java.util.Objects;
 public class User {
 
     private String id;
+    private String nombreCompleto;
     private String email;
+    private String numeroIdentificacion;
+    private String numeroTelefonico;
     private String password;
     private RoleEnum role;
 
     public User() {
     }
 
-    public User(String id, String email, String password, RoleEnum role) {
+    public User(String id, String nombreCompleto, String email, String numeroIdentificacion,
+                String numeroTelefonico, String password, RoleEnum role) {
         this.id = id;
+        this.nombreCompleto = nombreCompleto;
         this.email = email;
+        this.numeroIdentificacion = numeroIdentificacion;
+        this.numeroTelefonico = numeroTelefonico;
         this.password = password;
         this.role = role;
     }
@@ -33,12 +40,36 @@ public class User {
         this.id = id;
     }
 
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
+    }
+
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getNumeroIdentificacion() {
+        return numeroIdentificacion;
+    }
+
+    public void setNumeroIdentificacion(String numeroIdentificacion) {
+        this.numeroIdentificacion = numeroIdentificacion;
+    }
+
+    public String getNumeroTelefonico() {
+        return numeroTelefonico;
+    }
+
+    public void setNumeroTelefonico(String numeroTelefonico) {
+        this.numeroTelefonico = numeroTelefonico;
     }
 
     public String getPassword() {

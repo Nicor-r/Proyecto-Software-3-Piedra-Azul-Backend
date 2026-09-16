@@ -17,8 +17,17 @@ public class UserJpaEntity {
     @Column(name = "id", nullable = false, updatable = false)
     private String id;
 
+    @Column(name = "nombreCompleto", nullable = false)
+    private String nombreCompleto;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
+
+    @Column(name = "numeroIdentificacion", nullable = false)
+    private String numeroIdentificacion;
+
+    @Column(name = "numeroTelefonico", nullable = false)
+    private String numeroTelefonico;
 
     @Column(name = "password", nullable = false)
     private String password;
@@ -30,9 +39,13 @@ public class UserJpaEntity {
     public UserJpaEntity() {
     }
 
-    public UserJpaEntity(String id, String email, String password, RoleEnum role) {
+    public UserJpaEntity(String id, String nombreCompleto, String email, String numeroIdentificacion,
+                         String numeroTelefonico, String password, RoleEnum role) {
         this.id = id;
+        this.nombreCompleto = nombreCompleto;
         this.email = email;
+        this.numeroIdentificacion = numeroIdentificacion;
+        this.numeroTelefonico = numeroTelefonico;
         this.password = password;
         this.role = role;
     }
@@ -45,12 +58,36 @@ public class UserJpaEntity {
         this.id = id;
     }
 
+    public String getNombreCompleto() {
+        return nombreCompleto;
+    }
+
+    public void setNombreCompleto(String nombreCompleto) {
+        this.nombreCompleto = nombreCompleto;
+    }
+
     public String getEmail() {
         return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getNumeroIdentificacion() {
+        return numeroIdentificacion;
+    }
+
+    public void setNumeroIdentificacion(String numeroIdentificacion) {
+        this.numeroIdentificacion = numeroIdentificacion;
+    }
+
+    public String getNumeroTelefonico() {
+        return numeroTelefonico;
+    }
+
+    public void setNumeroTelefonico(String numeroTelefonico) {
+        this.numeroTelefonico = numeroTelefonico;
     }
 
     public String getPassword() {

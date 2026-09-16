@@ -33,7 +33,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequest request) {
         User user = userMapper.toDomain(request);
-        authService.registerPatient(user);
+        authService.registerPatient(user, request.getConfirmPassword());
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

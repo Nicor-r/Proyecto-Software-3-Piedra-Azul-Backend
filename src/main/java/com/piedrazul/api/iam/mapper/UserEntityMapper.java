@@ -11,7 +11,10 @@ public class UserEntityMapper {
     public UserJpaEntity toEntity(User user) {
         return new UserJpaEntity(
                 user.getId(),
+                user.getNombreCompleto(),
                 user.getEmail(),
+                user.getNumeroIdentificacion(),
+                user.getNumeroTelefonico(),
                 user.getPassword(),
                 user.getRole()
         );
@@ -20,7 +23,10 @@ public class UserEntityMapper {
     public User toDomain(UserJpaEntity entity) {
         return new User(
                 entity.getId(),
+                entity.getNombreCompleto(),
                 entity.getEmail(),
+                entity.getNumeroIdentificacion(),
+                entity.getNumeroTelefonico(),
                 entity.getPassword(),
                 entity.getRole()
         );
