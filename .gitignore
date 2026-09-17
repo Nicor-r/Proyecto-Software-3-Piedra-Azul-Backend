@@ -1,0 +1,26 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# SQLite (datos locales de desarrollo/pruebas)
+*.db
+*.db-journal
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Variables de entorno / secretos locales
+.env
