@@ -7,8 +7,8 @@ import com.piedrazul.api.iam.domain.User;
 import com.piedrazul.api.iam.dto.LoginRequest;
 import com.piedrazul.api.iam.dto.TokenResponse;
 import com.piedrazul.api.iam.exception.AuthException;
-import com.piedrazul.api.iam.repository.PasswordHasher;
-import com.piedrazul.api.iam.repository.TokenProvider;
+import com.piedrazul.api.iam.provider.PasswordHasher;
+import com.piedrazul.api.iam.provider.TokenProvider;
 import com.piedrazul.api.iam.repository.UserRepository;
 
 import java.util.Optional;
@@ -16,7 +16,6 @@ import java.util.UUID;
 
 /**
  * Orquesta la logica de negocio de registro y autenticacion del modulo iam.
- *
  * Depende UNICAMENTE de las interfaces aprobadas (UserRepository,
  * PasswordHasher, TokenProvider). No conoce JPA, SQLite, BCrypt ni JJWT
  */
@@ -50,15 +49,12 @@ public class AuthService {
 
     /**
      * Registra un nuevo paciente.
-     *
      * Recibe un User parcial (tipicamente proveniente de
      * UserMapper.toDomain(RegisterRequest)), con id y role en null, y
      * confirmPassword como parametro separado (nunca forma parte de User).
-     *
      * Flujo: (1) email duplicado, (2) password == confirmPassword,
      * (3) generar UUID, (4) asignar PATIENT, (5) hashear password,
      * (6) persistir.
-     *
      * No retorna token: el paciente debe autenticarse por separado
      * mediante login().
      */
@@ -80,7 +76,6 @@ public class AuthService {
 
     /**
      * Autentica a un usuario existente y genera su token de acceso.
-     *
      * Usa el mismo mensaje generico de AuthException tanto si el email
      * no existe como si la contrasena no coincide, para no revelar
      * informacion sobre la existencia de una cuenta.

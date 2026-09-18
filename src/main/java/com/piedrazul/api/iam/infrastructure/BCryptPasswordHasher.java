@@ -3,7 +3,7 @@ package com.piedrazul.api.iam.infrastructure;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import com.piedrazul.api.iam.repository.PasswordHasher;
+import com.piedrazul.api.iam.provider.PasswordHasher;
 
 @Component
 public class BCryptPasswordHasher implements PasswordHasher {

@@ -24,8 +24,8 @@ import com.piedrazul.api.iam.domain.User;
 import com.piedrazul.api.iam.dto.LoginRequest;
 import com.piedrazul.api.iam.dto.TokenResponse;
 import com.piedrazul.api.iam.exception.AuthException;
-import com.piedrazul.api.iam.repository.PasswordHasher;
-import com.piedrazul.api.iam.repository.TokenProvider;
+import com.piedrazul.api.iam.provider.PasswordHasher;
+import com.piedrazul.api.iam.provider.TokenProvider;
 import com.piedrazul.api.iam.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)

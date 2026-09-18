@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.piedrazul.api.iam.domain.User;
-import com.piedrazul.api.iam.repository.TokenProvider;
+import com.piedrazul.api.iam.provider.TokenProvider;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
