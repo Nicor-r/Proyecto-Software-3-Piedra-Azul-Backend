@@ -1,4 +1,4 @@
-package com.piedrazul.api.iam.infrastructure;
+package com.piedrazul.api.iam.infrastructure.security;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;

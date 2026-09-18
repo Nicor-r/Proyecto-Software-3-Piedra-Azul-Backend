@@ -1,4 +1,4 @@
-package com.piedrazul.api.iam.infrastructure;
+package com.piedrazul.api.iam.infrastructure.security;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
