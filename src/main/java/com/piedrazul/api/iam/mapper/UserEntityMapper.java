@@ -3,7 +3,7 @@ package com.piedrazul.api.iam.mapper;
 import org.springframework.stereotype.Component;
 
 import com.piedrazul.api.iam.domain.User;
-import com.piedrazul.api.iam.infrastructure.UserJpaEntity;
+import com.piedrazul.api.iam.infrastructure.entity.UserJpaEntity;
 
 @Component
 public class UserEntityMapper {

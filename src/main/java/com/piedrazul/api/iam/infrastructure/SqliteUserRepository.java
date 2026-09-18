@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.piedrazul.api.iam.domain.User;
 import com.piedrazul.api.iam.mapper.UserEntityMapper;
 import com.piedrazul.api.iam.repository.UserRepository;
+import com.piedrazul.api.iam.infrastructure.entity.UserJpaEntity;
 
 @Repository
 public class SqliteUserRepository implements UserRepository {

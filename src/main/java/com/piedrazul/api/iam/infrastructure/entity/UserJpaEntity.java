@@ -1,4 +1,4 @@
-package com.piedrazul.api.iam.infrastructure;
+package com.piedrazul.api.iam.infrastructure.entity;
 
 import com.piedrazul.api.iam.domain.RoleEnum;
 
