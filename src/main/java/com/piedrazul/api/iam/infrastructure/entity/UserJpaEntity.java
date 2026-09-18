@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 public class UserJpaEntity {
 
     @Id
-    @Column(name = "id", nullable = false, updatable = false)
+    @Column(name = "id", nullable = false, updatable = false, length = 36)
     private String id;
 
     @Column(name = "nombreCompleto", nullable = false)
