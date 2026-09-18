@@ -1,4 +1,4 @@
-package com.piedrazul.api.iam.infrastructure;
+package com.piedrazul.api.iam.infrastructure.repository;
 
 import java.util.Optional;
 
