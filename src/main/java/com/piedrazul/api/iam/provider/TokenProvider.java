@@ -5,10 +5,8 @@ import com.piedrazul.api.iam.domain.User;
 /**
  * Contrato que abstrae el mecanismo tecnico de generacion y validacion de
  * credenciales de sesion (tokens).
- *
  * AuthService depende UNICAMENTE de esta interfaz y no conoce JWT, JJWT
  * ni ningun detalle de implementacion.
- *
  * Alcance actual aprobado: unicamente las tres operaciones necesarias
  * para registro/login en este corte. No incluye getRoleFromToken().
  */
