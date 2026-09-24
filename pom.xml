@@ -25,6 +25,12 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+
         <!-- ===================== Web / REST (capa controller) ===================== -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

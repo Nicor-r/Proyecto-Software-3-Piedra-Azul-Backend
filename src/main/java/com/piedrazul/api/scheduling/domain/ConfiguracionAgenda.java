@@ -15,6 +15,9 @@ public class ConfiguracionAgenda {
     private FranjaHoraria franjaHoraria;
     private IntervaloCitas intervaloCitas;
 
+    public ConfiguracionAgenda() {
+    }
+
     public ConfiguracionAgenda(String id, String doctorId, VentanaAgendamiento ventanaAgendamiento,
             DiasAtencion diasAtencion, FranjaHoraria franjaHoraria,
             IntervaloCitas intervaloCitas) {
