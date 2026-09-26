@@ -97,6 +97,18 @@ public class CitaService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<CitaDTO> obtenerMisCitas(String pacienteId) {
+        if (pacienteId == null || pacienteId.isBlank()) {
+            throw new IllegalArgumentException("El paciente no está autenticado");
+        }
+
+        return citaRepository.findByPacienteId(pacienteId)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
     private void validarRequest(AgendarCitaRequest request, String pacienteId) {
         if (request == null) {
             throw new IllegalArgumentException("La solicitud no puede ser nula");

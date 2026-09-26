@@ -38,13 +38,18 @@ public class CitaController {
     }
 
     /**
-     * Agenda una cita para el paciente autenticado.
-     * El email del usuario se obtiene del JWT mediante AuthenticatedUserArgumentResolver.
+     * Agenda una cita para el paciente autenticado. El email del usuario se
+     * obtiene del JWT mediante AuthenticatedUserArgumentResolver.
      */
     @PostMapping("/agendar")
     public ResponseEntity<CitaDTO> agendarCita(@RequestBody @Valid AgendarCitaRequest request,
-                                               @AuthenticatedUser String pacienteEmail) {
+            @AuthenticatedUser String pacienteEmail) {
         CitaDTO cita = citaService.agendarCita(request, pacienteEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(cita);
+    }
+
+    @GetMapping("/mis-citas")
+    public ResponseEntity<List<CitaDTO>> obtenerMisCitas(@AuthenticatedUser String pacienteEmail) {
+        return ResponseEntity.ok(citaService.obtenerMisCitas(pacienteEmail));
     }
 }
