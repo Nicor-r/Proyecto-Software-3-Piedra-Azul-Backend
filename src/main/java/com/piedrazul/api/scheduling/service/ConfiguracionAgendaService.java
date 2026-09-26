@@ -2,6 +2,7 @@ package com.piedrazul.api.scheduling.service;
 
 import java.time.DayOfWeek;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -17,9 +18,25 @@ import com.piedrazul.api.scheduling.exception.SchedulingException;
 import com.piedrazul.api.scheduling.repository.ConfiguracionAgendaRepository;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
-
-@Service 
+/**
+ * Orquesta la logica de negocio de HE-03 (configuracion de parametros del
+ * sistema).
+ *
+ * Depende UNICAMENTE de las interfaces DoctorRepository y
+ * ConfiguracionAgendaRepository. No conoce JPA, SQLite, ni que los datos
+ * de Doctor esten quemados.
+ *
+ * Responsabilidad de este Service (lo que NO hacen los Value Objects):
+ *  1. Validar que el medico/terapista exista y este activo (HU-3.1,
+ *     criterio 3).
+ *  2. Distinguir "campo vacio" (null) de "valor invalido", construyendo
+ *     los Value Objects solo cuando el campo si llego.
+ *  3. Decidir si es una configuracion nueva o una actualizacion (un
+ *     medico/terapista tiene una unica ConfiguracionAgenda).
+ */
+@Service
 public class ConfiguracionAgendaService {
+
     private final DoctorRepository doctorRepository;
     private final ConfiguracionAgendaRepository configuracionAgendaRepository;
 
@@ -57,6 +74,17 @@ public class ConfiguracionAgendaService {
                 idExistente, doctor.getId(), ventana, dias, franja, intervalo);
 
         return configuracionAgendaRepository.save(configuracion);
+    }
+
+    /**
+     * Consulta la configuracion actual de un doctor (para precargar el
+     * formulario de edicion en el frontend). Devuelve Optional.empty() si
+     * el doctor aun no tiene configuracion guardada (no es un error: es un
+     * caso normal la primera vez que se configura un doctor).
+     */
+    public Optional<ConfiguracionAgenda> consultarConfiguracion(String doctorId) {
+        obtenerDoctorValidoYActivo(doctorId);
+        return configuracionAgendaRepository.findByDoctorId(doctorId);
     }
 
     private Doctor obtenerDoctorValidoYActivo(String doctorId) {

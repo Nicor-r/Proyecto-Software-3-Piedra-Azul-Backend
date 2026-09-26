@@ -171,6 +171,41 @@ class ConfiguracionAgendaServiceTest {
     }
 
     @Test
+    void consultarConfiguracion_doctorConConfiguracionExistente_laDevuelve() {
+        Doctor doctorActivo = new Doctor("doc-1", "Dra. Ana Martinez", true);
+        when(doctorRepository.findById("doc-1")).thenReturn(Optional.of(doctorActivo));
+
+        ConfiguracionAgenda configuracionExistente = new ConfiguracionAgenda();
+        configuracionExistente.setId("config-existente-id");
+        configuracionExistente.setDoctorId("doc-1");
+        when(configuracionAgendaRepository.findByDoctorId("doc-1"))
+                .thenReturn(Optional.of(configuracionExistente));
+
+        Optional<ConfiguracionAgenda> resultado = service.consultarConfiguracion("doc-1");
+
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().getId()).isEqualTo("config-existente-id");
+    }
+
+    @Test
+    void consultarConfiguracion_doctorSinConfiguracionTodavia_devuelveVacio() {
+        Doctor doctorActivo = new Doctor("doc-2", "Dr. Carlos Ruiz", true);
+        when(doctorRepository.findById("doc-2")).thenReturn(Optional.of(doctorActivo));
+        when(configuracionAgendaRepository.findByDoctorId("doc-2")).thenReturn(Optional.empty());
+
+        Optional<ConfiguracionAgenda> resultado = service.consultarConfiguracion("doc-2");
+
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void consultarConfiguracion_doctorInexistente_lanzaSchedulingException() {
+        when(doctorRepository.findById("doc-x")).thenReturn(Optional.empty());
+
+        assertThrows(SchedulingException.class, () -> service.consultarConfiguracion("doc-x"));
+    }
+
+    @Test
     void diasAtencionNulo_seTrataComoVacio_lanzaSchedulingException() {
         Doctor doctorActivo = new Doctor("doc-1", "Dra. Ana Martinez", true);
         when(doctorRepository.findById("doc-1")).thenReturn(Optional.of(doctorActivo));
