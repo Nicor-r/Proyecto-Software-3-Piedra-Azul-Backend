@@ -1,9 +1,17 @@
 package com.piedrazul.api.scheduling.dto;
 
 /**
- * Forma consistente para todas las respuestas de error de este modulo.
- * Antes se devolvia texto plano; con esto el frontend siempre puede hacer
- * response.json() sin que se rompa, sea exito o error.
+ * @file ErrorResponse.java
+ * @brief DTO que estandariza el cuerpo de las respuestas de error del módulo.
+ *
+ * @details
+ *          Sustituye las respuestas en texto plano por un objeto JSON con un
+ *          campo
+ *          {@code message}. Así el frontend puede invocar siempre
+ *          {@code response.json()}
+ *          sin distinguir entre respuestas exitosas y de error. Es devuelto,
+ *          entre otros,
+ *          por {@code ConfiguracionAgendaController#handleSchedulingException}.
  */
 public class ErrorResponse {
 
@@ -12,6 +20,11 @@ public class ErrorResponse {
     public ErrorResponse() {
     }
 
+    /**
+     * @brief Crea la respuesta de error con el mensaje indicado.
+     *
+     * @param message Descripción del error mostrada al cliente.
+     */
     public ErrorResponse(String message) {
         this.message = message;
     }

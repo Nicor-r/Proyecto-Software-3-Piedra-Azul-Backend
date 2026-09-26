@@ -4,7 +4,20 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.Set;
 
+/**
+ * @file ConfiguracionAgendaResponse.java
+ * @brief DTO de salida con la configuración de agenda de un médico o terapista.
+ *
+ * @details
+ *          Es el cuerpo devuelto por {@code ConfiguracionAgendaController}
+ *          tanto en la
+ *          operación de configuración como en la de consulta. Se construye a
+ *          partir de
+ *          la entidad de dominio {@code ConfiguracionAgenda} mediante el mapper
+ *          correspondiente.
+ */
 public class ConfiguracionAgendaResponse {
+
     private String id;
     private String doctorId;
     private int ventanaSemanas;
@@ -16,6 +29,17 @@ public class ConfiguracionAgendaResponse {
     public ConfiguracionAgendaResponse() {
     }
 
+    /**
+     * @brief Crea la respuesta con todos los campos de la configuración.
+     *
+     * @param id               Identificador de la configuración.
+     * @param doctorId         Identificador del doctor.
+     * @param ventanaSemanas   Semanas de la ventana de agendamiento.
+     * @param diasAtencion     Días de atención.
+     * @param horaInicio       Hora de inicio de la franja horaria.
+     * @param horaFin          Hora de fin de la franja horaria.
+     * @param intervaloMinutos Intervalo entre citas en minutos.
+     */
     public ConfiguracionAgendaResponse(String id, String doctorId, int ventanaSemanas,
             Set<DayOfWeek> diasAtencion, LocalTime horaInicio,
             LocalTime horaFin, int intervaloMinutos) {

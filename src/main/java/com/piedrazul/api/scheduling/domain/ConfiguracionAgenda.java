@@ -3,11 +3,23 @@ package com.piedrazul.api.scheduling.domain;
 import java.util.Objects;
 
 /**
- * ConfiguracionAgenda - Entidad de dominio que agrupa los 4 Value Obj para un
- * medico/terapista especifico
- * 
+ * @file ConfiguracionAgenda.java
+ * @brief Entidad de dominio que agrupa los 4 Value Objects de configuración
+ *        para un médico o terapista específico.
+ *
+ * @details
+ * Esta clase representa la configuración completa de agenda de un doctor,
+ * compuesta por los siguientes Value Objects:
+ * - {@link VentanaAgendamiento}: ventana temporal de agendamiento.
+ * - {@link DiasAtencion}: días en los que el doctor atiende.
+ * - {@link FranjaHoraria}: franja horaria de atención.
+ * - {@link IntervaloCitas}: intervalo entre citas.
+ *
+ * La igualdad entre instancias se basa únicamente en el campo {@code id}.
  */
 public class ConfiguracionAgenda {
+
+
     private String id;
     private String doctorId;
     private VentanaAgendamiento ventanaAgendamiento;
@@ -18,6 +30,16 @@ public class ConfiguracionAgenda {
     public ConfiguracionAgenda() {
     }
 
+    /**
+     * @brief Constructor completo de la configuración de agenda.
+     *
+     * @param id                  Identificador único de la configuración.
+     * @param doctorId            Identificador del doctor.
+     * @param ventanaAgendamiento Value Object de ventana de agendamiento.
+     * @param diasAtencion        Value Object de días de atención.
+     * @param franjaHoraria       Value Object de franja horaria.
+     * @param intervaloCitas      Value Object de intervalo entre citas.
+     */
     public ConfiguracionAgenda(String id, String doctorId, VentanaAgendamiento ventanaAgendamiento,
             DiasAtencion diasAtencion, FranjaHoraria franjaHoraria,
             IntervaloCitas intervaloCitas) {
@@ -28,6 +50,7 @@ public class ConfiguracionAgenda {
         this.franjaHoraria = franjaHoraria;
         this.intervaloCitas = intervaloCitas;
     }
+
 
     public String getId() {
         return id;
@@ -77,6 +100,16 @@ public class ConfiguracionAgenda {
         this.intervaloCitas = intervaloCitas;
     }
 
+    /**
+     * @brief Compara esta configuración con otro objeto.
+     *
+     * @details
+     * Dos instancias de {@code ConfiguracionAgenda} se consideran iguales si
+     * tienen el mismo {@code id}.
+     *
+     * @param o Objeto a comparar.
+     * @return {@code true} si son iguales; {@code false} en caso contrario.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -87,6 +120,15 @@ public class ConfiguracionAgenda {
         return Objects.equals(id, that.id);
     }
 
+    /**
+     * @brief Calcula el código hash de la configuración.
+     *
+     * @details
+     * El hash se calcula únicamente a partir del campo {@code id}, de forma
+     * coherente con {@link #equals(Object)}.
+     *
+     * @return El código hash de la configuración.
+     */
     @Override
     public int hashCode() {
         return Objects.hash(id);

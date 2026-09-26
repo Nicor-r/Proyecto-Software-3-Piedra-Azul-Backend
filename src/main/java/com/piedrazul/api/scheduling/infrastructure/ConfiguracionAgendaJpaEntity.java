@@ -5,9 +5,27 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/**
+ * @file ConfiguracionAgendaJpaEntity.java
+ * @brief Entidad JPA que mapea la tabla {@code configuraciones_agenda}.
+ *
+ * @details
+ * Representa la persistencia de la configuración de agenda de un doctor. Es
+ * una clase separada del dominio ({@code ConfiguracionAgenda}) para aislar el
+ * modelo de persistencia; la conversión entre ambos se realiza en el mapper
+ * correspondiente.
+ *
+ * Notas de mapeo:
+ * - La columna {@code doctor_id} es única: cada doctor tiene como máximo una
+ *   configuración.
+ * - {@code diasAtencion}, {@code horaInicio} y {@code horaFin} se persisten
+ *   como {@code String} y no como tipos nativos, por lo que la conversión
+ *   hacia/desde {@code Set<DayOfWeek>} y {@code LocalTime} ocurre en el mapper.
+ */
 @Entity
 @Table(name = "configuraciones_agenda")
 public class ConfiguracionAgendaJpaEntity {
+
     @Id
     @Column(name = "id", nullable = false, updatable = false)
     private String id;

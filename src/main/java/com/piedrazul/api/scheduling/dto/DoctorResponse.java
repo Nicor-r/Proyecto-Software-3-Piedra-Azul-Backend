@@ -1,8 +1,13 @@
 package com.piedrazul.api.scheduling.dto;
 
 /**
- * DoctorResponse. Para evitar exponer la entidad Doctor directamente por
- * accidente al JSON que ve el cliente.
+ * @file DoctorResponse.java
+ * @brief DTO de salida con los datos de un doctor expuestos al cliente.
+ *
+ * @details
+ *          Se usa para evitar exponer la entidad {@code Doctor} directamente en
+ *          el
+ *          JSON de respuesta. Es devuelto por {@code DoctorController#listar}.
  */
 public class DoctorResponse {
 
@@ -13,6 +18,13 @@ public class DoctorResponse {
     public DoctorResponse() {
     }
 
+    /**
+     * @brief Crea la respuesta con los datos del doctor.
+     *
+     * @param id     Identificador del doctor.
+     * @param nombre Nombre del doctor.
+     * @param activo Indica si el doctor está activo.
+     */
     public DoctorResponse(String id, String nombre, boolean activo) {
         this.id = id;
         this.nombre = nombre;
