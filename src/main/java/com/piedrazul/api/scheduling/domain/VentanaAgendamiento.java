@@ -5,15 +5,26 @@ import java.util.Objects;
 import com.piedrazul.api.scheduling.exception.SchedulingException;
 
 /**
- * Criterios de aceptacion
- * - semanas > 0 -> configuracion exitosa
- * - semanas <= 0 -> "La ventana de agendamiento debe ser un numero entero
- * mayor a 0"
+ * @file VentanaAgendamiento.java
+ * @brief Value Object que representa la ventana de agendamiento, expresada en
+ *        semanas.
+ *
+ * @details
+ * Invariante: el número de semanas debe ser un entero estrictamente mayor que
+ * cero.
+ *
+ * Al ser inmutable, la instancia es segura de compartir entre hilos.
  */
 public final class VentanaAgendamiento {
 
     private final int semanas;
 
+    /**
+     * @brief Crea la ventana de agendamiento a partir del número de semanas.
+     *
+     * @param semanas Número de semanas de la ventana. Debe ser mayor que cero.
+     * @throws SchedulingException Si {@code semanas} es menor o igual a cero.
+     */
     public VentanaAgendamiento(int semanas) {
         if (semanas <= 0) {
             throw new SchedulingException(

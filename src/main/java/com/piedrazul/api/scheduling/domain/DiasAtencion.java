@@ -9,14 +9,24 @@ import java.util.Set;
 import com.piedrazul.api.scheduling.exception.SchedulingException;
 
 /**
- * Value Object para HU Dias de la semana en que un medico/terapista atiende
- * un dia seleccionado -> Ok
- * ningun dia seleccionado -> Seleccionar almenos un dia
+ * @file DiasAtencion.java
+ * @brief Value Object que representa los días de la semana en que un médico
+ *        o terapista atiende.
+ *
+ * @details
+ * Invariante: debe contener al menos un día. La colección es inmutable una vez
+ * construida, por lo que la instancia es segura de compartir entre hilos.
  */
-public  final class  DiasAtencion {
+public final class DiasAtencion {
 
     private final Set<DayOfWeek> dias;
 
+    /**
+     * @brief Crea el Value Object a partir del conjunto de días de atención.
+     *
+     * @param dias Días seleccionados. No puede ser {@code null} ni vacío.
+     * @throws SchedulingException Si {@code dias} es {@code null} o está vacío.
+     */
     public DiasAtencion(Set<DayOfWeek> dias) {
         if (dias == null || dias.isEmpty()) {
             throw new SchedulingException("Debe seleccionar al menos un dia de atencion");

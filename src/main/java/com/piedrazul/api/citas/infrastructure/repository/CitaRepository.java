@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.piedrazul.api.citas.domain.Cita;
+import com.piedrazul.api.citas.domain.EstadoCita;
 
 @Repository
 public interface CitaRepository extends JpaRepository<Cita, Long> {
@@ -28,4 +29,7 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     List<Cita> findByMedicoIdAndEstado(String medicoId, String estado);
 
     List<Cita> findByPacienteIdAndEstado(String pacienteId, String estado);
+
+    // para filtrar el listado de un medico/fecha por estado especifico.
+    List<Cita> findByMedicoIdAndFechaAndEstadoOrderByHoraAsc(String medicoId, LocalDate fecha, EstadoCita estado);
 }

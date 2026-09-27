@@ -18,7 +18,7 @@
     <description>Sistema de Reserva de Citas Medicas - PiedraAZUL</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <jjwt.version>0.13.0</jjwt.version>
         <sqlite-jdbc.version>3.53.4.0</sqlite-jdbc.version>
     </properties>

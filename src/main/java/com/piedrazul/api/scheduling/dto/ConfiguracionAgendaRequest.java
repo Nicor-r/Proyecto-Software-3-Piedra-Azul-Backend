@@ -6,13 +6,25 @@ import java.util.Set;
 
 import jakarta.validation.constraints.NotBlank;
 
-
 /**
- * DTO de entrada para configurar la agenda de un medico/terapista
- * (AdminController/ConfiguracionAgendaController -> configurarAgenda()).
+ * @file ConfiguracionAgendaRequest.java
+ * @brief DTO de entrada para configurar la agenda de un médico o terapista.
  *
+ * @details
+ *          Es el cuerpo esperado por
+ *          {@code ConfiguracionAgendaController#configurar}.
+ *          Solo {@code doctorId} se valida con Bean Validation en esta capa; el
+ *          resto
+ *          de los campos se validan en el dominio al construir los Value
+ *          Objects
+ *          correspondientes ({@code VentanaAgendamiento}, {@code DiasAtencion},
+ *          {@code FranjaHoraria}, {@code IntervaloCitas}).
  */
 public class ConfiguracionAgendaRequest {
+
+    /**
+     * @brief Identificador del doctor. Obligatorio.
+     */
     @NotBlank
     private String doctorId;
 
