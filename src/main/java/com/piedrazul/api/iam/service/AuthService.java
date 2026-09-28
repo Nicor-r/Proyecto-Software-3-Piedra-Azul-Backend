@@ -95,6 +95,6 @@ public class AuthService {
 
         String token = tokenProvider.generateToken(user);
 
-        return new TokenResponse(token);
+        return new TokenResponse(token, user.getRole());
     }
 }
