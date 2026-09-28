@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.domain.RoleEnum;
 import com.piedrazul.api.iam.provider.TokenProvider;
 
 import io.jsonwebtoken.Claims;
@@ -34,6 +35,7 @@ public class JwtTokenProvider implements TokenProvider {
 
         return Jwts.builder()
                 .subject(user.getEmail())
+            .claim("role", user.getRole().name())
                 .issuedAt(now)
                 .expiration(expiration)
                 .signWith(secretKey)
@@ -53,6 +55,12 @@ public class JwtTokenProvider implements TokenProvider {
     @Override
     public String getEmailFromToken(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    @Override
+    public RoleEnum getRoleFromToken(String token) {
+        String role = parseClaims(token).get("role", String.class);
+        return role == null ? null : RoleEnum.valueOf(role);
     }
 
     private Claims parseClaims(String token) {

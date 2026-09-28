@@ -216,6 +216,7 @@ class AuthServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("generated-jwt-token");
+        assertThat(response.getRole()).isEqualTo(RoleEnum.PATIENT);
     }
 
     @Test
