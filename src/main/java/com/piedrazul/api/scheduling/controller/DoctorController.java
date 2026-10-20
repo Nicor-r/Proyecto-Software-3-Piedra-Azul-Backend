@@ -23,7 +23,7 @@ import com.piedrazul.api.scheduling.service.DoctorService;
  * - {@code GET /api/admin/doctors}: retorna la lista de doctores disponibles.
  */
 @RestController
-@RequestMapping("/api/admin/doctors")
+@RequestMapping({"/api/admin/doctors", "/api/doctores"})
 public class DoctorController {
 
     /**

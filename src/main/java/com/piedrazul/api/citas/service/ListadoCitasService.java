@@ -10,6 +10,8 @@ import com.piedrazul.api.citas.domain.EstadoCita;
 import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.ListadoCitasResponse;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
+import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
@@ -35,31 +37,51 @@ public class ListadoCitasService {
 
     private final CitaRepository citaRepository;
     private final DoctorRepository doctorRepository;
+    private final UserRepository userRepository;
 
-    public ListadoCitasService(CitaRepository citaRepository, DoctorRepository doctorRepository) {
+    public ListadoCitasService(CitaRepository citaRepository,
+                               DoctorRepository doctorRepository,
+                               UserRepository userRepository) {
         this.citaRepository = citaRepository;
         this.doctorRepository = doctorRepository;
+        this.userRepository = userRepository;
     }
 
     public ListadoCitasResponse listarCitas(String medicoId, LocalDate fecha, String estadoTexto) {
-        validarFiltrosObligatorios(medicoId, fecha);
-        validarFechaNoAnterior(fecha);
-        validarMedicoDisponible(medicoId);
+        boolean tieneMedico = medicoId != null && !medicoId.isBlank();
+        boolean tieneFecha = fecha != null;
+
+        if (tieneFecha) {
+            validarFechaNoAnterior(fecha);
+        }
+
+        if (tieneMedico) {
+            validarMedicoDisponible(medicoId);
+        }
+
         EstadoCita estado = parseEstadoOrNull(estadoTexto);
 
-        List<Cita> citas = (estado == null)
-                ? citaRepository.findByMedicoIdAndFechaOrderByHoraAsc(medicoId, fecha)
-                : citaRepository.findByMedicoIdAndFechaAndEstadoOrderByHoraAsc(medicoId, fecha, estado);
+        List<Cita> citas;
+        if (tieneMedico && tieneFecha) {
+            citas = (estado == null)
+                    ? citaRepository.findByMedicoIdAndFechaOrderByHoraAsc(medicoId, fecha)
+                    : citaRepository.findByMedicoIdAndFechaAndEstadoOrderByHoraAsc(medicoId, fecha, estado);
+        } else if (tieneMedico) {
+            citas = (estado == null)
+                    ? citaRepository.findByMedicoIdOrderByFechaAscHoraAsc(medicoId)
+                    : citaRepository.findByMedicoIdAndEstadoOrderByFechaAscHoraAsc(medicoId, estado);
+        } else if (tieneFecha) {
+            citas = (estado == null)
+                    ? citaRepository.findByFechaOrderByHoraAsc(fecha)
+                    : citaRepository.findByFechaAndEstadoOrderByHoraAsc(fecha, estado);
+        } else {
+            citas = (estado == null)
+                    ? citaRepository.findAll()
+                    : citaRepository.findAll().stream().filter(c -> c.getEstado() == estado).toList();
+        }
 
         List<CitaDTO> citasDTO = citas.stream().map(this::toDTO).toList();
         return new ListadoCitasResponse(citasDTO.size(), citasDTO);
-    }
-
-    private void validarFiltrosObligatorios(String medicoId, LocalDate fecha) {
-        if (medicoId == null || medicoId.isBlank() || fecha == null) {
-            throw new IllegalArgumentException(
-                    "Debe seleccionar un medico/terapista y una fecha para realizar la busqueda");
-        }
     }
 
     private void validarFechaNoAnterior(LocalDate fecha) {
@@ -87,13 +109,23 @@ public class ListadoCitasService {
     }
 
     private CitaDTO toDTO(Cita cita) {
+        String medicoNombre = doctorRepository.findById(cita.getMedicoId())
+                .map(Doctor::getNombre)
+                .orElse(cita.getMedicoId());
+
+        String pacienteNombre = userRepository.findByEmail(cita.getPacienteId())
+                .map(User::getNombreCompleto)
+                .orElse(cita.getPacienteId());
+
         return new CitaDTO(
                 cita.getId(),
                 cita.getPacienteId(),
                 cita.getMedicoId(),
                 cita.getFecha(),
                 cita.getHora(),
-                cita.getEstado()
+                cita.getEstado(),
+                pacienteNombre,
+                medicoNombre
         );
     }
 }

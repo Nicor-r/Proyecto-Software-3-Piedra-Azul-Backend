@@ -12,17 +12,27 @@ public class CitaDTO {
     private LocalDate fecha;
     private LocalTime hora;
     private EstadoCita estado;
+    private String pacienteNombre;
+    private String medicoNombre;
 
     public CitaDTO() {}
 
     public CitaDTO(Long id, String pacienteId, String medicoId,
                    LocalDate fecha, LocalTime hora, EstadoCita estado) {
+        this(id, pacienteId, medicoId, fecha, hora, estado, null, null);
+    }
+
+    public CitaDTO(Long id, String pacienteId, String medicoId,
+                   LocalDate fecha, LocalTime hora, EstadoCita estado,
+                   String pacienteNombre, String medicoNombre) {
         this.id = id;
         this.pacienteId = pacienteId;
         this.medicoId = medicoId;
         this.fecha = fecha;
         this.hora = hora;
         this.estado = estado;
+        this.pacienteNombre = pacienteNombre;
+        this.medicoNombre = medicoNombre;
     }
 
     // Getters y Setters
@@ -73,5 +83,21 @@ public class CitaDTO {
 
     public void setEstado(EstadoCita estado) {
         this.estado = estado;
+    }
+
+    public String getPacienteNombre() {
+        return pacienteNombre;
+    }
+
+    public void setPacienteNombre(String pacienteNombre) {
+        this.pacienteNombre = pacienteNombre;
+    }
+
+    public String getMedicoNombre() {
+        return medicoNombre;
+    }
+
+    public void setMedicoNombre(String medicoNombre) {
+        this.medicoNombre = medicoNombre;
     }
 }

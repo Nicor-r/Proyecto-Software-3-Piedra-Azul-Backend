@@ -24,7 +24,11 @@ public class SeedDoctorRepository implements DoctorRepository {
     private static final List<Doctor> DOCTORES = List.of(
             new Doctor("doc-1", "Dra. Ana Martinez - Medicina General", true),
             new Doctor("doc-2", "Dr. Carlos Ruiz - Fisioterapia", true),
-            new Doctor("doc-3", "Dra. Laura Gomez - Odontologia (inactiva)", false)
+            new Doctor("doc-3", "Dra. Laura Gomez - Odontologia (inactiva)", false),
+            new Doctor("doc-4", "Dra. Ibis González - Cardiología", true),
+            new Doctor("doc-5", "Dra. Clara Inés - Endocrinología", true),
+            new Doctor("doc-6", "Dr. Rocha - Terapia Física", true),
+            new Doctor("doc-7", "Dra. Pastrana - Pediatría", true)
     );
 
     /**
