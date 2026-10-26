@@ -5,38 +5,53 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.piedrazul.api.scheduling.domain.Doctor;
+import com.piedrazul.api.scheduling.dto.DoctorRequest;
+import com.piedrazul.api.scheduling.exception.SchedulingException;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
 /**
  * @file DoctorService.java
- * @brief Servicio que orquesta las consultas de médicos y terapistas.
- *
- * @details
- * Actualmente actúa como paso directo hacia {@link DoctorRepository}. Se
- * mantiene como capa de servicio —en lugar de que el controlador invoque al
- * repositorio directamente— para dejar el camino abierto a incorporar reglas
- * de negocio más adelante (por ejemplo, filtrar solo médicos activos).
+ * @brief Servicio que orquesta la lógica de negocio para la gestión de médicos y terapistas.
  */
 @Service
 public class DoctorService {
 
     private final DoctorRepository doctorRepository;
 
-    /**
-     * @brief Construye el servicio con su repositorio.
-     *
-     * @param doctorRepository Repositorio de doctores.
-     */
     public DoctorService(DoctorRepository doctorRepository) {
         this.doctorRepository = doctorRepository;
     }
 
-    /**
-     * @brief Lista todos los doctores disponibles.
-     *
-     * @return Lista de doctores.
-     */
     public List<Doctor> listarDoctores() {
         return doctorRepository.findAll();
+    }
+
+    public Doctor obtenerDoctorPorId(String id) {
+        return doctorRepository.findById(id)
+                .orElseThrow(() -> new SchedulingException("El medico/terapista no existe"));
+    }
+
+    public Doctor registrarDoctor(DoctorRequest request) {
+        if (request == null || request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new SchedulingException("El nombre del medico/terapista es obligatorio");
+        }
+        Doctor doctor = new Doctor(null, request.getNombre().trim(), request.isActivo());
+        return doctorRepository.save(doctor);
+    }
+
+    public Doctor actualizarDoctor(String id, DoctorRequest request) {
+        if (id == null || id.isBlank()) {
+            throw new SchedulingException("El ID del medico/terapista es obligatorio");
+        }
+        if (request == null || request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new SchedulingException("El nombre del medico/terapista es obligatorio");
+        }
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new SchedulingException("El medico/terapista no existe"));
+
+        doctor.setNombre(request.getNombre().trim());
+        doctor.setActivo(request.isActivo());
+
+        return doctorRepository.save(doctor);
     }
 }

@@ -10,10 +10,8 @@ import com.piedrazul.api.scheduling.domain.Doctor;
  * @brief Puerto de persistencia para {@link Doctor}.
  *
  * @details
- * Define el contrato de acceso a doctores. Al vivir en el dominio, desacopla
- * a los servicios de la tecnología concreta de almacenamiento; en este corte
- * la única implementación es {@code SeedDoctorRepository}, con datos en
- * memoria.
+ * Define el contrato de acceso y persistencia para doctores. Desacopla
+ * los servicios de la tecnología concreta de almacenamiento (SQLite vía JPA).
  */
 public interface DoctorRepository {
 
@@ -31,4 +29,35 @@ public interface DoctorRepository {
      * @return Lista de doctores.
      */
     List<Doctor> findAll();
+
+    /**
+     * @brief Guarda o actualiza un doctor.
+     *
+     * @param doctor Instancia del doctor a persistir.
+     * @return El doctor persistido.
+     */
+    Doctor save(Doctor doctor);
+
+    /**
+     * @brief Guarda una lista de doctores.
+     *
+     * @param doctores Lista de doctores a persistir.
+     * @return Lista de doctores persistidos.
+     */
+    List<Doctor> saveAll(List<Doctor> doctores);
+
+    /**
+     * @brief Cuenta la cantidad total de doctores registrados.
+     *
+     * @return Número total de doctores.
+     */
+    long count();
+
+    /**
+     * @brief Comprueba si existe un doctor con el id especificado.
+     *
+     * @param id Identificador del doctor.
+     * @return {@code true} si existe; {@code false} de lo contrario.
+     */
+    boolean existsById(String id);
 }
