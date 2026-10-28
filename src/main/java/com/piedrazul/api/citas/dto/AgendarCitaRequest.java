@@ -18,6 +18,16 @@ public class AgendarCitaRequest {
 
     @NotNull(message = "La hora es obligatoria")
     private LocalTime hora;
+
+    public AgendarCitaRequest() {
+    }
+
+    public AgendarCitaRequest(String medicoId, LocalDate fecha, LocalTime hora) {
+        this.medicoId = medicoId;
+        this.fecha = fecha;
+        this.hora = hora;
+    }
+
     // Getters y Setters
 
     public String getMedicoId() {

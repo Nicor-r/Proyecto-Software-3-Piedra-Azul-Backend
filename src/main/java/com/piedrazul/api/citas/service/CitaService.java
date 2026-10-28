@@ -1,9 +1,13 @@
 package com.piedrazul.api.citas.service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -20,20 +24,32 @@ import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
 import com.piedrazul.api.citas.exception.FranjaNoDisponibleException;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
+import com.piedrazul.api.scheduling.domain.ConfiguracionAgenda;
+import com.piedrazul.api.scheduling.domain.Doctor;
+import com.piedrazul.api.scheduling.repository.ConfiguracionAgendaRepository;
+import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
 @Service
 public class CitaService {
 
     private static final Logger log = LoggerFactory.getLogger(CitaService.class);
 
-    private static final LocalTime HORA_INICIO = LocalTime.of(8, 0);
-    private static final LocalTime HORA_FIN = LocalTime.of(17, 0);
-    private static final int DURACION_FRANJA_MINUTOS = 30;
+    private static final LocalTime DEFAULT_HORA_INICIO = LocalTime.of(8, 0);
+    private static final LocalTime DEFAULT_HORA_FIN = LocalTime.of(17, 0);
+    private static final int DEFAULT_INTERVALO_MINUTOS = 30;
+    private static final int DEFAULT_VENTANA_SEMANAS = 4;
+    private static final Set<DayOfWeek> DEFAULT_DIAS_ATENCION = EnumSet.allOf(DayOfWeek.class);
 
     private final CitaRepository citaRepository;
+    private final ConfiguracionAgendaRepository configuracionAgendaRepository;
+    private final DoctorRepository doctorRepository;
 
-    public CitaService(CitaRepository citaRepository) {
+    public CitaService(CitaRepository citaRepository,
+                       ConfiguracionAgendaRepository configuracionAgendaRepository,
+                       DoctorRepository doctorRepository) {
         this.citaRepository = citaRepository;
+        this.configuracionAgendaRepository = configuracionAgendaRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     @Transactional(readOnly = true)
@@ -48,6 +64,24 @@ public class CitaService {
             throw new IllegalArgumentException("No se pueden consultar fechas pasadas");
         }
 
+        validarMedicoDisponible(medicoId);
+
+        Optional<ConfiguracionAgenda> configOpt = configuracionAgendaRepository.findByDoctorId(medicoId);
+
+        int ventanaSemanas = configOpt.map(c -> c.getVentanaAgendamiento().getSemanas()).orElse(DEFAULT_VENTANA_SEMANAS);
+        if (fecha.isAfter(LocalDate.now().plusWeeks(ventanaSemanas))) {
+            throw new IllegalArgumentException("La fecha excede la ventana de agendamiento permitida (" + ventanaSemanas + " semanas)");
+        }
+
+        Set<DayOfWeek> diasPermitidos = configOpt.map(c -> c.getDiasAtencion().getDias()).orElse(DEFAULT_DIAS_ATENCION);
+        if (!diasPermitidos.contains(fecha.getDayOfWeek())) {
+            return Collections.emptyList();
+        }
+
+        LocalTime horaInicio = configOpt.map(c -> c.getFranjaHoraria().getHoraInicio()).orElse(DEFAULT_HORA_INICIO);
+        LocalTime horaFin = configOpt.map(c -> c.getFranjaHoraria().getHoraFin()).orElse(DEFAULT_HORA_FIN);
+        int intervaloMinutos = configOpt.map(c -> c.getIntervaloCitas().getMinutos()).orElse(DEFAULT_INTERVALO_MINUTOS);
+
         Set<LocalTime> horasOcupadas = citaRepository
                 .findByMedicoIdAndFecha(medicoId, fecha)
                 .stream()
@@ -55,10 +89,14 @@ public class CitaService {
                 .collect(Collectors.toSet());
 
         List<FranjaDTO> franjas = new ArrayList<>();
-        LocalTime hora = HORA_INICIO;
-        while (hora.isBefore(HORA_FIN)) {
-            franjas.add(new FranjaDTO(hora, !horasOcupadas.contains(hora)));
-            hora = hora.plusMinutes(DURACION_FRANJA_MINUTOS);
+        LocalTime hora = horaInicio;
+        while (!hora.plusMinutes(intervaloMinutos).isAfter(horaFin)) {
+            boolean ocupada = horasOcupadas.contains(hora);
+            boolean pasadaHoy = fecha.isEqual(LocalDate.now()) && hora.isBefore(LocalTime.now());
+            boolean disponible = !ocupada && !pasadaHoy;
+
+            franjas.add(new FranjaDTO(hora, disponible));
+            hora = hora.plusMinutes(intervaloMinutos);
         }
         return franjas;
     }
@@ -109,6 +147,14 @@ public class CitaService {
                 .toList();
     }
 
+    private void validarMedicoDisponible(String medicoId) {
+        Doctor doctor = doctorRepository.findById(medicoId)
+                .orElseThrow(() -> new IllegalArgumentException("El medico/terapista seleccionado no esta disponible"));
+        if (!doctor.isActivo()) {
+            throw new IllegalArgumentException("El medico/terapista seleccionado no esta disponible");
+        }
+    }
+
     private void validarRequest(AgendarCitaRequest request, String pacienteId) {
         if (request == null) {
             throw new IllegalArgumentException("La solicitud no puede ser nula");
@@ -125,9 +171,37 @@ public class CitaService {
         if (request.getFecha().isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("No se pueden agendar citas en fechas pasadas");
         }
-        if (request.getHora().isBefore(HORA_INICIO) || !request.getHora().isBefore(HORA_FIN)) {
-            throw new IllegalArgumentException(
-                    "La hora debe estar entre " + HORA_INICIO + " y " + HORA_FIN);
+
+        validarMedicoDisponible(request.getMedicoId());
+
+        Optional<ConfiguracionAgenda> configOpt = configuracionAgendaRepository.findByDoctorId(request.getMedicoId());
+
+        int ventanaSemanas = configOpt.map(c -> c.getVentanaAgendamiento().getSemanas()).orElse(DEFAULT_VENTANA_SEMANAS);
+        if (request.getFecha().isAfter(LocalDate.now().plusWeeks(ventanaSemanas))) {
+            throw new IllegalArgumentException("La fecha excede la ventana de agendamiento permitida (" + ventanaSemanas + " semanas)");
+        }
+
+        Set<DayOfWeek> diasPermitidos = configOpt.map(c -> c.getDiasAtencion().getDias()).orElse(DEFAULT_DIAS_ATENCION);
+        if (!diasPermitidos.contains(request.getFecha().getDayOfWeek())) {
+            throw new IllegalArgumentException("El medico no atiende en el dia seleccionado");
+        }
+
+        LocalTime horaInicio = configOpt.map(c -> c.getFranjaHoraria().getHoraInicio()).orElse(DEFAULT_HORA_INICIO);
+        LocalTime horaFin = configOpt.map(c -> c.getFranjaHoraria().getHoraFin()).orElse(DEFAULT_HORA_FIN);
+        int intervaloMinutos = configOpt.map(c -> c.getIntervaloCitas().getMinutos()).orElse(DEFAULT_INTERVALO_MINUTOS);
+
+        if (request.getHora().isBefore(horaInicio) || request.getHora().plusMinutes(intervaloMinutos).isAfter(horaFin)) {
+            throw new IllegalArgumentException("La hora debe estar entre " + horaInicio + " y " + horaFin);
+        }
+
+        long segundosDesdeInicio = (long) request.getHora().toSecondOfDay() - horaInicio.toSecondOfDay();
+        long intervaloSegundos = (long) intervaloMinutos * 60;
+        if (segundosDesdeInicio % intervaloSegundos != 0) {
+            throw new IllegalArgumentException("La hora seleccionada no corresponde a un intervalo valido");
+        }
+
+        if (request.getFecha().isEqual(LocalDate.now()) && request.getHora().isBefore(LocalTime.now())) {
+            throw new IllegalArgumentException("No se pueden agendar citas en horas pasadas");
         }
     }
 

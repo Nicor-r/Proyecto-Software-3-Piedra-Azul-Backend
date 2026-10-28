@@ -32,4 +32,14 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
 
     // para filtrar el listado de un medico/fecha por estado especifico.
     List<Cita> findByMedicoIdAndFechaAndEstadoOrderByHoraAsc(String medicoId, LocalDate fecha, EstadoCita estado);
+
+    // Buscar citas de un médico en todas las fechas
+    List<Cita> findByMedicoIdOrderByFechaAscHoraAsc(String medicoId);
+
+    List<Cita> findByMedicoIdAndEstadoOrderByFechaAscHoraAsc(String medicoId, EstadoCita estado);
+
+    // Buscar citas de una fecha para cualquier médico
+    List<Cita> findByFechaOrderByHoraAsc(LocalDate fecha);
+
+    List<Cita> findByFechaAndEstadoOrderByHoraAsc(LocalDate fecha, EstadoCita estado);
 }
