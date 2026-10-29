@@ -41,7 +41,7 @@ public class AdminAccountInitializer implements ApplicationRunner {
             throw new IllegalStateException("Configure ADMIN_EMAIL y ADMIN_PASSWORD conjuntamente");
         }
 
-        userRepository.findByEmail(adminEmail).ifPresentOrElse(user -> {
+        userRepository.findFirstByEmail(adminEmail).ifPresentOrElse(user -> {
             if (user.getRole() != RoleEnum.ADMIN) {
                 throw new IllegalStateException("ADMIN_EMAIL ya pertenece a una cuenta que no es ADMIN");
             }

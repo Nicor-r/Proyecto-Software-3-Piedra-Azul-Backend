@@ -1,10 +1,5 @@
 package com.piedrazul.api.citas.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,10 +8,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.piedrazul.api.citas.domain.Cita;
@@ -26,6 +25,7 @@ import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
 import com.piedrazul.api.citas.exception.FranjaNoDisponibleException;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
+import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.ConfiguracionAgenda;
 import com.piedrazul.api.scheduling.domain.DiasAtencion;
 import com.piedrazul.api.scheduling.domain.Doctor;
@@ -47,6 +47,9 @@ class CitaServiceTest {
     @Mock
     private DoctorRepository doctorRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     private CitaService service;
 
     private final String MEDICO_ID = "doc-1";
@@ -56,7 +59,7 @@ class CitaServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new CitaService(citaRepository, configuracionAgendaRepository, doctorRepository);
+        service = new CitaService(citaRepository, configuracionAgendaRepository, doctorRepository, userRepository);
     }
 
     @Test

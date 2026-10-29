@@ -22,7 +22,7 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     boolean existsByMedicoIdAndFechaAndHora(String medicoId, LocalDate fecha, LocalTime hora);
 
     // Opcional: buscar todas las citas de un paciente
-    List<Cita> findByPacienteId(String pacienteId); 
+    List<Cita> findByPacienteId(String pacienteId);
 
     List<Cita> findByMedicoIdAndFechaBetween(String medicoId, LocalDate desde, LocalDate hasta);
 
@@ -42,4 +42,10 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     List<Cita> findByFechaOrderByHoraAsc(LocalDate fecha);
 
     List<Cita> findByFechaAndEstadoOrderByHoraAsc(LocalDate fecha, EstadoCita estado);
+
+    // Exportar: citas del medico/terapista en una fecha, ordenadas por hora
+    // List<Cita> findByMedicoIdAndFechaOrderByHoraAsc(String medicoId, LocalDate fecha);
+
+    // Historial: citas del paciente, mas recientes primero
+    List<Cita> findByPacienteIdOrderByFechaDescHoraDesc(String pacienteId);
 }

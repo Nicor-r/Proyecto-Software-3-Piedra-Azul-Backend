@@ -47,4 +47,11 @@ public class AuthController {
     public ResponseEntity<String> handleAuthException(AuthException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
+
+    @PostMapping("/register-therapist")
+    public ResponseEntity<Void> registerTherapist(@RequestBody @Valid RegisterRequest request) {
+        User user = userMapper.toDomain(request);
+        authService.registerTherapist(user, request.getConfirmPassword());
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

@@ -14,22 +14,29 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.piedrazul.api.citas.domain.Cita;
 import com.piedrazul.api.citas.domain.EstadoCita;
 import com.piedrazul.api.citas.dto.AgendarCitaRequest;
 import com.piedrazul.api.citas.dto.CitaDTO;
+import com.piedrazul.api.citas.dto.CitaDetalleDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
 import com.piedrazul.api.citas.exception.FranjaNoDisponibleException;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
+import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
+import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.ConfiguracionAgenda;
 import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.repository.ConfiguracionAgendaRepository;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
 @Service
+
 public class CitaService {
 
     private static final Logger log = LoggerFactory.getLogger(CitaService.class);
@@ -43,13 +50,19 @@ public class CitaService {
     private final CitaRepository citaRepository;
     private final ConfiguracionAgendaRepository configuracionAgendaRepository;
     private final DoctorRepository doctorRepository;
+    private final SpringDataTerapistaRepository terapistaRepository;
+    private final UserRepository userRepository;
 
     public CitaService(CitaRepository citaRepository,
-                       ConfiguracionAgendaRepository configuracionAgendaRepository,
-                       DoctorRepository doctorRepository) {
+            ConfiguracionAgendaRepository configuracionAgendaRepository,
+            DoctorRepository doctorRepository,
+            SpringDataTerapistaRepository terapistaRepository,
+            UserRepository userRepository) {
         this.citaRepository = citaRepository;
         this.configuracionAgendaRepository = configuracionAgendaRepository;
         this.doctorRepository = doctorRepository;
+        this.terapistaRepository = terapistaRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -148,11 +161,22 @@ public class CitaService {
     }
 
     private void validarMedicoDisponible(String medicoId) {
-        Doctor doctor = doctorRepository.findById(medicoId)
-                .orElseThrow(() -> new IllegalArgumentException("El medico/terapista seleccionado no esta disponible"));
-        if (!doctor.isActivo()) {
-            throw new IllegalArgumentException("El medico/terapista seleccionado no esta disponible");
+        // 1. Intentar buscar en la tabla de doctores
+        Optional<Doctor> doctorOpt = doctorRepository.findById(medicoId);
+        if (doctorOpt.isPresent()) {
+            if (!doctorOpt.get().isActivo()) {
+                throw new IllegalArgumentException("El medico/terapista seleccionado no esta disponible");
+            }
+            return; // Si es un doctor y está activo, es válido
         }
+
+        // 2. Si no está en doctores, buscar en la tabla de terapistas
+        if (terapistaRepository.findById(medicoId).isPresent()) {
+            return; // Si es un terapista, también es válido
+        }
+
+        // 3. Si no existe en ninguna de las dos, lanzar el error
+        throw new IllegalArgumentException("El medico/terapista seleccionado no esta disponible");
     }
 
     private void validarRequest(AgendarCitaRequest request, String pacienteId) {
@@ -214,5 +238,54 @@ public class CitaService {
                 cita.getHora(),
                 cita.getEstado()
         );
+    }
+
+    // Inyecciones adicionales al constructor:
+    //private final UserRepository userRepository;
+    // (tu CitaRepository ya está inyectado)
+    @Transactional(readOnly = true)
+    public List<CitaDetalleDTO> listarDetallePorFechaYTerapista(LocalDate fecha, String medicoId) {
+        // Busca las citas por el UUID del médico
+        List<Cita> citas = citaRepository.findByMedicoIdAndFechaOrderByHoraAsc(medicoId, fecha);
+
+        if (citas.isEmpty()) {
+            return List.of();
+        }
+
+        // Busca el nombre del terapeuta por su UUID
+        String medicoNombre = userRepository.findById(medicoId)
+                .map(User::getNombreCompleto)
+                .orElseGet(() -> terapistaRepository.findById(medicoId)
+                        .map(com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity::getNombre)
+                        .orElse(medicoId));
+
+        return citas.stream().map(c -> {
+            // Busca al paciente por su UUID o por email (por si acaso)
+            Optional<User> pacOpt = userRepository.findById(c.getPacienteId());
+            if (pacOpt.isEmpty()) {
+                pacOpt = userRepository.findByEmail(c.getPacienteId());
+            }
+
+            User pac = pacOpt.orElse(null);
+
+            return new CitaDetalleDTO(
+                    c.getFecha(),
+                    c.getHora(),
+                    c.getPacienteId(),
+                    pac != null ? pac.getNumeroIdentificacion() : "N/A",
+                    pac != null ? pac.getNombreCompleto() : c.getPacienteId(),
+                    c.getMedicoId(),
+                    medicoNombre,
+                    c.getEstado() != null ? c.getEstado().name() : ""
+            );
+        }).toList();
+    }
+
+    public List<Cita> listarPorCedulaPaciente(String cedula) {
+        User paciente = userRepository.findByNumeroIdentificacion(cedula)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Paciente no encontrado con identificacion " + cedula));
+
+        return citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(paciente.getId());
     }
 }

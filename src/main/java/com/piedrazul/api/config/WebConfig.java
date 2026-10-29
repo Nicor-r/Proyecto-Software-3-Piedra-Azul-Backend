@@ -10,6 +10,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.piedrazul.api.citas.security.AuthenticatedUserArgumentResolver;
+import com.piedrazul.api.citas.security.CitasAuthorizationInterceptor;
 import com.piedrazul.api.scheduling.security.SchedulingAuthorizationInterceptor;
 
 @Configuration
@@ -17,20 +18,23 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver;
     private final SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor;
+    private final CitasAuthorizationInterceptor citasAuthorizationInterceptor;   // NUEVO
     private final String frontendOrigin;
 
     public WebConfig(AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver,
-                     SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor,
-                     @Value("${app.cors.allowed-origin:http://localhost:4200}") String frontendOrigin) {
+            SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor,
+            CitasAuthorizationInterceptor citasAuthorizationInterceptor,
+            @Value("${app.cors.allowed-origin:http://localhost:4200}") String frontendOrigin) {
         this.authenticatedUserArgumentResolver = authenticatedUserArgumentResolver;
         this.schedulingAuthorizationInterceptor = schedulingAuthorizationInterceptor;
+        this.citasAuthorizationInterceptor = citasAuthorizationInterceptor;
         this.frontendOrigin = frontendOrigin;
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOrigins(frontendOrigin)
+                .allowedOrigins(frontendOrigin)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
     }
@@ -45,5 +49,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(schedulingAuthorizationInterceptor)
                 .addPathPatterns("/api/admin/doctors", "/api/admin/doctors/**",
                         "/api/admin/schedule-config", "/api/admin/schedule-config/**");
+
+        registry.addInterceptor(citasAuthorizationInterceptor)
+                .addPathPatterns("/api/citas/exportar",
+                        "/api/citas/paciente/**");
     }
 }
