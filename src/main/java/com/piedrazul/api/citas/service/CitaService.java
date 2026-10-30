@@ -149,14 +149,39 @@ public class CitaService {
     }
 
     @Transactional(readOnly = true)
-    public List<CitaDTO> obtenerMisCitas(String pacienteId) {
-        if (pacienteId == null || pacienteId.isBlank()) {
+    public List<CitaDTO> obtenerMisCitas(String pacienteEmail) {
+        if (pacienteEmail == null || pacienteEmail.isBlank()) {
             throw new IllegalArgumentException("El paciente no está autenticado");
         }
 
-        return citaRepository.findByPacienteId(pacienteId)
+        // 1. Buscamos al paciente por email para obtener su nombre
+        String nombrePaciente = userRepository.findByEmail(pacienteEmail)
+                .map(User::getNombreCompleto)
+                .orElse(pacienteEmail);
+
+        // 2. Buscamos las citas del paciente
+        return citaRepository.findByPacienteId(pacienteEmail)
                 .stream()
-                .map(this::toDTO)
+                .map(cita -> {
+                    // 3. Buscamos el nombre del médico o terapista
+                    String nombreMedico = userRepository.findById(cita.getMedicoId())
+                            .map(User::getNombreCompleto)
+                            .orElseGet(() -> terapistaRepository.findById(cita.getMedicoId())
+                                    .map(com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity::getNombre)
+                                    .orElse("Médico #" + cita.getMedicoId()));
+
+                    // 4. Creamos el DTO con los 8 parámetros
+                    return new CitaDTO(
+                            cita.getId(),
+                            cita.getPacienteId(),
+                            cita.getMedicoId(),
+                            cita.getFecha(),
+                            cita.getHora(),
+                            cita.getEstado(),
+                            nombrePaciente, // <-- Pasamos el nombre que hallamos arriba
+                            nombreMedico // <-- Pasamos el nombre del médico/terapista
+                    );
+                })
                 .toList();
     }
 
@@ -281,11 +306,36 @@ public class CitaService {
         }).toList();
     }
 
-    public List<Cita> listarPorCedulaPaciente(String cedula) {
+    @Transactional(readOnly = true)
+    public List<CitaDTO> listarPorCedulaPaciente(String cedula) {
         User paciente = userRepository.findByNumeroIdentificacion(cedula)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Paciente no encontrado con identificacion " + cedula));
 
-        return citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(paciente.getId());
+        // Buscar las citas por UUID o por Email
+        List<Cita> citas = citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(paciente.getId());
+        if (citas.isEmpty()) {
+            citas = citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(paciente.getEmail());
+        }
+
+        // Mapear a CitaDTO cruzando los nombres
+        return citas.stream().map(cita -> {
+            String nombreMedico = userRepository.findById(cita.getMedicoId())
+                    .map(User::getNombreCompleto)
+                    .orElseGet(() -> terapistaRepository.findById(cita.getMedicoId())
+                            .map(com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity::getNombre)
+                            .orElse("Médico #" + cita.getMedicoId()));
+
+            return new CitaDTO(
+                    cita.getId(),
+                    cita.getPacienteId(),
+                    cita.getMedicoId(),
+                    cita.getFecha(),
+                    cita.getHora(),
+                    cita.getEstado(),
+                    paciente.getNombreCompleto(), // Nombre del paciente
+                    nombreMedico // Nombre del médico
+            );
+        }).toList();
     }
 }

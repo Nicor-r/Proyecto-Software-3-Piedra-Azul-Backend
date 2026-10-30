@@ -25,6 +25,7 @@ import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
 import com.piedrazul.api.citas.exception.FranjaNoDisponibleException;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.ConfiguracionAgenda;
 import com.piedrazul.api.scheduling.domain.DiasAtencion;
@@ -50,6 +51,9 @@ class CitaServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private SpringDataTerapistaRepository terapistaRepository;
+
     private CitaService service;
 
     private final String MEDICO_ID = "doc-1";
@@ -59,7 +63,7 @@ class CitaServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new CitaService(citaRepository, configuracionAgendaRepository, doctorRepository, userRepository);
+        service = new CitaService(citaRepository, configuracionAgendaRepository, doctorRepository, terapistaRepository, userRepository);
     }
 
     @Test

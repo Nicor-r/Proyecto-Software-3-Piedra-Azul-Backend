@@ -1,8 +1,11 @@
 package com.piedrazul.api.iam.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +16,8 @@ import com.piedrazul.api.iam.dto.LoginRequest;
 import com.piedrazul.api.iam.dto.RegisterRequest;
 import com.piedrazul.api.iam.dto.TokenResponse;
 import com.piedrazul.api.iam.exception.AuthException;
+import com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.mapper.UserMapper;
 import com.piedrazul.api.iam.service.AuthService;
 
@@ -24,10 +29,12 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserMapper userMapper;
+    private final SpringDataTerapistaRepository terapistaRepository;
 
-    public AuthController(AuthService authService, UserMapper userMapper) {
+    public AuthController(AuthService authService, UserMapper userMapper, SpringDataTerapistaRepository terapistaRepository) {
         this.authService = authService;
         this.userMapper = userMapper;
+        this.terapistaRepository = terapistaRepository;
     }
 
     @PostMapping("/register")
@@ -53,5 +60,11 @@ public class AuthController {
         User user = userMapper.toDomain(request);
         authService.registerTherapist(user, request.getConfirmPassword());
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+    // En TerapistaController.java o AuthController.java
+
+    @GetMapping("/api/terapistas")
+    public ResponseEntity<List<TerapistaJpaEntity>> listarTerapistas() {
+        return ResponseEntity.ok(terapistaRepository.findAll());
     }
 }

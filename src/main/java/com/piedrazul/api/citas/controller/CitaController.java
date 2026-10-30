@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.piedrazul.api.citas.domain.Cita;
 import com.piedrazul.api.citas.dto.AgendarCitaRequest;
 import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.CitaDetalleDTO;
@@ -40,10 +39,10 @@ public class CitaController {
     private final UserRepository userRepository;
     private final SpringDataTerapistaRepository terapistaRepository; // NUEVO
 
-    public CitaController(CitaService citaService, 
-                          CitaCsvExporter csvExporter,
-                          UserRepository userRepository,
-                          SpringDataTerapistaRepository terapistaRepository) {
+    public CitaController(CitaService citaService,
+            CitaCsvExporter csvExporter,
+            UserRepository userRepository,
+            SpringDataTerapistaRepository terapistaRepository) {
         this.citaService = citaService;
         this.csvExporter = csvExporter;
         this.userRepository = userRepository;
@@ -70,8 +69,8 @@ public class CitaController {
     }
 
     /**
-     * Exporta el CSV de citas para una fecha específica.
-     * El ID del terapista se deduce automáticamente del token JWT.
+     * Exporta el CSV de citas para una fecha específica. El ID del terapista se
+     * deduce automáticamente del token JWT.
      */
     @GetMapping("/exportar")
     public ResponseEntity<byte[]> exportarCitas(
@@ -100,7 +99,7 @@ public class CitaController {
     }
 
     @GetMapping("/paciente/{cedula}")
-    public ResponseEntity<List<Cita>> historialPorCedula(@PathVariable String cedula) {
+    public ResponseEntity<List<CitaDTO>> historialPorCedula(@PathVariable String cedula) {
         return ResponseEntity.ok(citaService.listarPorCedulaPaciente(cedula));
     }
 }
