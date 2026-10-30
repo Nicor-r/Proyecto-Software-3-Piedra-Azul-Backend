@@ -10,8 +10,9 @@ import com.piedrazul.api.scheduling.domain.Doctor;
  * @brief Puerto de persistencia para {@link Doctor}.
  *
  * @details
- * Define el contrato de acceso y persistencia para doctores. Desacopla
- * los servicios de la tecnología concreta de almacenamiento (SQLite vía JPA).
+ *          Define el contrato de acceso y persistencia para doctores. Desacopla
+ *          los servicios de la tecnología concreta de almacenamiento (SQLite
+ *          vía JPA).
  */
 public interface DoctorRepository {
 
@@ -22,6 +23,15 @@ public interface DoctorRepository {
      * @return {@link Optional} con el doctor si existe, o vacío en caso contrario.
      */
     Optional<Doctor> findById(String id);
+
+    /**
+     * @brief Busca el doctor vinculado a una cuenta de usuario (modulo iam).
+     *
+     * @param userId Id del User con el que el medico inicia sesion.
+     * @return {@link Optional} con el doctor si existe una ficha vinculada a ese
+     *         usuario.
+     */
+    Optional<Doctor> findByUserId(String userId);
 
     /**
      * @brief Retorna todos los doctores disponibles.

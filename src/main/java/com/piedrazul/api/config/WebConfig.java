@@ -8,10 +8,12 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.http.HttpHeaders;
 
 import com.piedrazul.api.citas.security.AuthenticatedUserArgumentResolver;
 import com.piedrazul.api.citas.security.CitasAuthorizationInterceptor;
 import com.piedrazul.api.scheduling.security.SchedulingAuthorizationInterceptor;
+import com.piedrazul.api.citas.security.MedicoAuthorizationInterceptor;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -19,15 +21,18 @@ public class WebConfig implements WebMvcConfigurer {
     private final AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver;
     private final SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor;
     private final CitasAuthorizationInterceptor citasAuthorizationInterceptor;   // NUEVO
+    private final MedicoAuthorizationInterceptor medicoAuthorizationInterceptor;
     private final String frontendOrigin;
 
-    public WebConfig(AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver,
+        public WebConfig(AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver,
             SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor,
             CitasAuthorizationInterceptor citasAuthorizationInterceptor,
+            MedicoAuthorizationInterceptor medicoAuthorizationInterceptor,
             @Value("${app.cors.allowed-origin:http://localhost:4200}") String frontendOrigin) {
         this.authenticatedUserArgumentResolver = authenticatedUserArgumentResolver;
         this.schedulingAuthorizationInterceptor = schedulingAuthorizationInterceptor;
         this.citasAuthorizationInterceptor = citasAuthorizationInterceptor;
+        this.medicoAuthorizationInterceptor = medicoAuthorizationInterceptor;
         this.frontendOrigin = frontendOrigin;
     }
 
@@ -36,7 +41,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins(frontendOrigin)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .exposedHeaders(HttpHeaders.CONTENT_DISPOSITION);
     }
 
     @Override
@@ -53,5 +59,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(citasAuthorizationInterceptor)
                 .addPathPatterns("/api/citas/exportar",
                         "/api/citas/paciente/**");
+
+        registry.addInterceptor(medicoAuthorizationInterceptor)
+                .addPathPatterns("/api/medico/**");
     }
 }

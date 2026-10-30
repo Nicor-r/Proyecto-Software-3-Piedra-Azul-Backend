@@ -106,6 +106,18 @@ class JwtTokenProviderTest {
     }
 
     @Test
+    void generateToken_conRolMedico_incluyeRolMedicoVerificable() {
+        User medico = new User("medico-id", "Dra. Ibis Gonzalez", "medico@piedrazul.com", "1061999999",
+                "3000000000", "hashed-password", RoleEnum.MEDICO);
+
+        String token = tokenProvider.generateToken(medico);
+
+        assertThat(tokenProvider.validateToken(token)).isTrue();
+        assertThat(tokenProvider.getEmailFromToken(token)).isEqualTo("medico@piedrazul.com");
+        assertThat(tokenProvider.getRoleFromToken(token)).isEqualTo(RoleEnum.MEDICO);
+    }
+
+    @Test
     void validateToken_conTokenExpirado_retornaFalse() {
         Date now = new Date();
         Date pasada = new Date(now.getTime() - 10000);

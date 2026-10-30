@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.domain.RoleEnum;
 
 /**
  * Contrato de persistencia para la entidad de dominio User. Agnostico a
@@ -17,7 +18,7 @@ public interface UserRepository {
     Optional<User> findByEmail(String email);
 
     boolean existsByEmail(String email);
-    
+
     Optional<User> findFirstByEmail(String email);
 
     Optional<User> findByNumeroIdentificacion(String numeroIdentificacion);
@@ -25,4 +26,9 @@ public interface UserRepository {
     Optional<User> findById(String id);
 
     List<User> findAllById(List<String> ids);
+
+    /**
+     * Hasta 10 usuarios de un rol cuya cedula EMPIEZA por el prefijo dado (HU-5.1).
+     */
+    List<User> findTop10ByRoleAndNumeroIdentificacionStartingWith(RoleEnum role, String prefijo);
 }

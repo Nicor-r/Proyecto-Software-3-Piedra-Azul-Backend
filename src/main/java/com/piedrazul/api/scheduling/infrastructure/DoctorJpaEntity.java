@@ -23,13 +23,22 @@ public class DoctorJpaEntity {
     @Column(name = "activo", nullable = false)
     private boolean activo;
 
+    // Id del User (modulo iam) con el que este medico inicia sesion. Opcional.
+    @Column(name = "user_id", length = 36)
+    private String userId;
+
     public DoctorJpaEntity() {
     }
 
     public DoctorJpaEntity(String id, String nombre, boolean activo) {
+        this(id, nombre, activo, null);
+    }
+
+    public DoctorJpaEntity(String id, String nombre, boolean activo, String userId) {
         this.id = id;
         this.nombre = nombre;
         this.activo = activo;
+        this.userId = userId;
     }
 
     public String getId() {
@@ -54,5 +63,13 @@ public class DoctorJpaEntity {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

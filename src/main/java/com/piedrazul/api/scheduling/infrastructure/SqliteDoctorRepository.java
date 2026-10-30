@@ -12,7 +12,8 @@ import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
 /**
  * @file SqliteDoctorRepository.java
- * @brief Implementación de {@link DoctorRepository} respaldada en SQLite vía Spring Data JPA.
+ * @brief Implementación de {@link DoctorRepository} respaldada en SQLite vía
+ *        Spring Data JPA.
  */
 @Repository
 public class SqliteDoctorRepository implements DoctorRepository {
@@ -21,7 +22,7 @@ public class SqliteDoctorRepository implements DoctorRepository {
     private final DoctorEntityMapper mapper;
 
     public SqliteDoctorRepository(SpringDataDoctorRepository springDataRepository,
-                                  DoctorEntityMapper mapper) {
+            DoctorEntityMapper mapper) {
         this.springDataRepository = springDataRepository;
         this.mapper = mapper;
     }
@@ -29,6 +30,14 @@ public class SqliteDoctorRepository implements DoctorRepository {
     @Override
     public Optional<Doctor> findById(String id) {
         return springDataRepository.findById(id).map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<Doctor> findByUserId (String userId) {
+        if (userId == null || userId.isBlank()) {
+            return Optional.empty();
+        }
+        return springDataRepository.findByUserId(userId).map(mapper::toDomain);
     }
 
     @Override

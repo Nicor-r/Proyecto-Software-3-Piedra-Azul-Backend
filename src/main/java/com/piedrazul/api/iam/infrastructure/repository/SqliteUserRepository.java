@@ -9,6 +9,7 @@ import com.piedrazul.api.iam.domain.User;
 import com.piedrazul.api.iam.infrastructure.entity.UserJpaEntity;
 import com.piedrazul.api.iam.mapper.UserEntityMapper;
 import com.piedrazul.api.iam.repository.UserRepository;
+import com.piedrazul.api.iam.domain.RoleEnum;
 
 @Repository
 public class SqliteUserRepository implements UserRepository {
@@ -67,5 +68,14 @@ public class SqliteUserRepository implements UserRepository {
     public Optional<User> findFirstByEmail(String email) {
         return springDataUserRepository.findFirstByEmail(email)
                 .map(userEntityMapper::toDomain);
+    }
+
+    @Override
+    public List<User> findTop10ByRoleAndNumeroIdentificacionStartingWith(RoleEnum role, String prefijo) {
+        return springDataUserRepository
+                .findTop10ByRoleAndNumeroIdentificacionStartingWithOrderByNumeroIdentificacionAsc(role, prefijo)
+                .stream()
+                .map(userEntityMapper::toDomain)
+                .toList();
     }
 }

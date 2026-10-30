@@ -72,4 +72,34 @@ class SqliteDoctorRepositoryTest {
 
         assertThat(repository.count()).isEqualTo(5L);
     }
+
+    @Test
+    void findByUserId_conUsuarioVinculado_retornaDoctorConSuUserId() {
+        DoctorJpaEntity entity = new DoctorJpaEntity("doc-4", "Dra. Ibis Gonzalez", true, "user-123");
+        when(springDataRepository.findByUserId("user-123")).thenReturn(Optional.of(entity));
+
+        Optional<Doctor> result = repository.findByUserId("user-123");
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getId()).isEqualTo("doc-4");
+        assertThat(result.get().getUserId()).isEqualTo("user-123");
+    }
+
+    @Test
+    void findByUserId_conUserIdVacio_retornaVacioSinConsultarLaBaseDeDatos() {
+        Optional<Doctor> result = repository.findByUserId("  ");
+
+        assertThat(result).isEmpty();
+        verify(springDataRepository, org.mockito.Mockito.never()).findByUserId(any());
+    }
+
+    @Test
+    void save_conservaElUserIdDelDoctor() {
+        Doctor doctor = new Doctor("doc-4", "Dra. Ibis Gonzalez", true, "user-123");
+        when(springDataRepository.save(any(DoctorJpaEntity.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Doctor saved = repository.save(doctor);
+
+        assertThat(saved.getUserId()).isEqualTo("user-123");
+    }
 }

@@ -7,27 +7,40 @@ import java.util.Objects;
  * @brief Entidad de dominio que representa a un médico o terapista.
  *
  * @details
- * En este primer corte no existe CRUD de médicos: las instancias se cargan
- * desde {@code infrastructure}. La identidad de la entidad está definida por
- * su {@code id}.
+ *          La identidad de la entidad está definida por su {@code id} (ej.
+ *          "doc-4").
+ *          El campo {@code userId} es OPCIONAL: vincula esta ficha con la
+ *          cuenta de
+ *          usuario (modulo iam) con la que el medico inicia sesion. Si es null,
+ *          el
+ *          doctor existe en la agenda pero no tiene cuenta para ingresar al
+ *          sistema.
  */
 public class Doctor {
 
     private String id;
     private String nombre;
     private boolean activo;
+    private String userId;
 
     /**
-     * @brief Crea un doctor con sus datos básicos.
-     *
-     * @param id     Identificador único del doctor.
-     * @param nombre Nombre del doctor.
-     * @param activo Indica si el doctor está activo.
+     * @brief Crea un doctor SIN cuenta de usuario vinculada (comportamiento
+     *        original).
      */
     public Doctor(String id, String nombre, boolean activo) {
+        this(id, nombre, activo, null);
+    }
+
+    /**
+     * @brief Crea un doctor vinculado a una cuenta de usuario.
+     *
+     * @param userId Id del User (modulo iam) del medico; puede ser null.
+     */
+    public Doctor(String id, String nombre, boolean activo, String userId) {
         this.id = id;
         this.nombre = nombre;
         this.activo = activo;
+        this.userId = userId;
     }
 
     public String getId() {
@@ -52,6 +65,14 @@ public class Doctor {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     @Override

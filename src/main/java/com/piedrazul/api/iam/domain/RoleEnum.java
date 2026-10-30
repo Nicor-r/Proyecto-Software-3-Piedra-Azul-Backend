@@ -7,5 +7,6 @@ public enum RoleEnum {
     ADMIN,
     AGENDADOR,
     PATIENT,
-    THERAPIST
+    THERAPIST,
+    MEDICO
 }

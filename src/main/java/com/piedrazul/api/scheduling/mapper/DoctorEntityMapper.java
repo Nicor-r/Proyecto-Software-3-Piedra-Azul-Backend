@@ -16,13 +16,13 @@ public class DoctorEntityMapper {
         if (entity == null) {
             return null;
         }
-        return new Doctor(entity.getId(), entity.getNombre(), entity.isActivo());
+        return new Doctor(entity.getId(), entity.getNombre(), entity.isActivo(), entity.getUserId());
     }
 
     public DoctorJpaEntity toEntity(Doctor domain) {
         if (domain == null) {
             return null;
         }
-        return new DoctorJpaEntity(domain.getId(), domain.getNombre(), domain.isActivo());
+        return new DoctorJpaEntity(domain.getId(), domain.getNombre(), domain.isActivo(), domain.getUserId());
     }
 }
