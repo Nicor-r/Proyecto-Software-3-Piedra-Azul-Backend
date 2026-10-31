@@ -1,0 +1,6 @@
+-- database: ./piedrazul.db
+
+INSERT INTO terapistas (id, user_id, nombre, especialidad)
+VALUES ('ter-001', '07d2c2ea-6358-4cff-b4e6-e2a958ca629c', 'Dra. Ana Terapista', 'Terapia Física');
+INSERT INTO terapistas (id, user_id, nombre, especialidad)
+VALUES ('ter-002', '50b7b141-1579-4aa4-969a-5594272d5b18', 'Dr. Carlos Terapista', 'Terapia Física');
