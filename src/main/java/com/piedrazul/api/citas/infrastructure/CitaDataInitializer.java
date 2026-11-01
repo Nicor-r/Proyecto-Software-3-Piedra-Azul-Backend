@@ -25,8 +25,8 @@ public class CitaDataInitializer implements ApplicationRunner {
     private final PasswordHasher passwordHasher;
 
     public CitaDataInitializer(CitaRepository citaRepository,
-                              UserRepository userRepository,
-                              PasswordHasher passwordHasher) {
+            UserRepository userRepository,
+            PasswordHasher passwordHasher) {
         this.citaRepository = citaRepository;
         this.userRepository = userRepository;
         this.passwordHasher = passwordHasher;
@@ -75,7 +75,9 @@ public class CitaDataInitializer implements ApplicationRunner {
                 new Cita("ana.ruiz@gmail.com", "doc-1", d4, LocalTime.of(8, 30), EstadoCita.PENDIENTE),
                 new Cita("carlos.medina@gmail.com", "doc-2", d4, LocalTime.of(11, 30), EstadoCita.CONFIRMADA),
                 new Cita("camila.rojas@gmail.com", "doc-4", d4, LocalTime.of(14, 0), EstadoCita.CONFIRMADA),
-                new Cita("diego.herrera@gmail.com", "doc-5", d4, LocalTime.of(16, 0), EstadoCita.CONFIRMADA)
+                new Cita("diego.herrera@gmail.com", "doc-5", d4, LocalTime.of(16, 0), EstadoCita.CONFIRMADA),
+                new Cita("ana.ruiz@gmail.com", "ter-001", d1, LocalTime.of(9, 0), EstadoCita.CONFIRMADA),
+                new Cita("marta.gomez@gmail.com", "ter-002", d2, LocalTime.of(10, 0), EstadoCita.PENDIENTE)
         );
 
         citaRepository.saveAll(citas);
