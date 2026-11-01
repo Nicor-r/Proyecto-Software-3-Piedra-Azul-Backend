@@ -11,25 +11,12 @@ import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.ListadoCitasResponse;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
 import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
-/**
- * Orquesta RF1 (HE-01): listar las citas de un medico/terapista en una
- * fecha determinada (HU-1), con filtro opcional por estado (HU-1.1).
- *
- * Depende de CitaRepository (modulo citas, para los datos de las citas) y
- * de DoctorRepository (modulo scheduling, SOLO para validar que el medico
- * exista y este activo) - dos modulos distintos colaborando unicamente a
- * traves de interfaces, sin conocer los detalles internos del otro.
- *
- * IllegalArgumentException se usa a proposito para los errores de
- * validacion: el GlobalExceptionHandler que ya existe en este modulo la
- * atrapa automaticamente y responde 400 con el mensaje, sin que este
- * Service (ni ningun controller) tenga que preocuparse por el formato de
- * la respuesta de error.
- */
 @Service
 public class ListadoCitasService {
 
@@ -38,13 +25,16 @@ public class ListadoCitasService {
     private final CitaRepository citaRepository;
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final SpringDataTerapistaRepository terapistaRepository; // <-- NUEVO
 
     public ListadoCitasService(CitaRepository citaRepository,
-                               DoctorRepository doctorRepository,
-                               UserRepository userRepository) {
+            DoctorRepository doctorRepository,
+            UserRepository userRepository,
+            SpringDataTerapistaRepository terapistaRepository) { // <-- NUEVO
         this.citaRepository = citaRepository;
         this.doctorRepository = doctorRepository;
         this.userRepository = userRepository;
+        this.terapistaRepository = terapistaRepository;
     }
 
     public ListadoCitasResponse listarCitas(String medicoId, LocalDate fecha, String estadoTexto) {
@@ -55,6 +45,7 @@ public class ListadoCitasService {
             validarFechaNoAnterior(fecha);
         }
 
+        // Quitamos la validación estricta de Doctor para permitir terapistas
         if (tieneMedico) {
             validarMedicoDisponible(medicoId);
         }
@@ -92,9 +83,14 @@ public class ListadoCitasService {
 
     private void validarMedicoDisponible(String medicoId) {
         Doctor doctor = doctorRepository.findById(medicoId).orElse(null);
-        if (doctor == null || !doctor.isActivo()) {
-            throw new IllegalArgumentException("El medico/terapista seleccionado no esta disponible");
+        if (doctor != null && doctor.isActivo()) {
+            return; // Es un doctor válido
         }
+        // Si no es doctor, verificamos si es un terapista
+        if (terapistaRepository.findById(medicoId).isPresent()) {
+            return; // Es un terapista válido
+        }
+        throw new IllegalArgumentException("El medico/terapista seleccionado no esta disponible");
     }
 
     private EstadoCita parseEstadoOrNull(String estadoTexto) {
@@ -109,13 +105,19 @@ public class ListadoCitasService {
     }
 
     private CitaDTO toDTO(Cita cita) {
+        // Buscar en tabla doctores o terapistas
         String medicoNombre = doctorRepository.findById(cita.getMedicoId())
                 .map(Doctor::getNombre)
-                .orElse(cita.getMedicoId());
+                .orElseGet(() -> terapistaRepository.findById(cita.getMedicoId())
+                        .map(TerapistaJpaEntity::getNombre)
+                        .orElse(cita.getMedicoId()));
 
-        String pacienteNombre = userRepository.findByEmail(cita.getPacienteId())
+        // Buscar paciente por ID o por Email
+        String pacienteNombre = userRepository.findById(cita.getPacienteId())
                 .map(User::getNombreCompleto)
-                .orElse(cita.getPacienteId());
+                .orElseGet(() -> userRepository.findByEmail(cita.getPacienteId())
+                        .map(User::getNombreCompleto)
+                        .orElse(cita.getPacienteId()));
 
         return new CitaDTO(
                 cita.getId(),

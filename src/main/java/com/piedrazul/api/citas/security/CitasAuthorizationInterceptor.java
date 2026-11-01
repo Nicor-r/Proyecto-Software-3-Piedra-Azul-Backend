@@ -22,7 +22,7 @@ public class CitasAuthorizationInterceptor implements HandlerInterceptor {
         Set.of(RoleEnum.THERAPIST, RoleEnum.ADMIN);
 
     private static final Set<RoleEnum> HISTORIAL_ROLES =
-        Set.of(RoleEnum.THERAPIST, RoleEnum.ADMIN, RoleEnum.PATIENT);
+        Set.of(RoleEnum.THERAPIST, RoleEnum.ADMIN, RoleEnum.PATIENT, RoleEnum.AGENDADOR);
 
     private final TokenProvider tokenProvider;
 

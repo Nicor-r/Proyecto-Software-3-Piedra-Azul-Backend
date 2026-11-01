@@ -1,19 +1,18 @@
 package com.piedrazul.api.citas.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
-
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.piedrazul.api.citas.domain.Cita;
@@ -22,6 +21,7 @@ import com.piedrazul.api.citas.dto.ListadoCitasResponse;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
 import com.piedrazul.api.iam.domain.RoleEnum;
 import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
@@ -37,7 +37,8 @@ class ListadoCitasServiceTest {
 
     @Mock
     private UserRepository userRepository;
-
+    @Mock
+    private SpringDataTerapistaRepository terapistaRepository;
     private ListadoCitasService service;
 
     private final String MEDICO_ID = "doc-1";
@@ -47,7 +48,7 @@ class ListadoCitasServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ListadoCitasService(citaRepository, doctorRepository, userRepository);
+        service = new ListadoCitasService(citaRepository, doctorRepository, userRepository, terapistaRepository);
     }
 
     @Test
