@@ -33,7 +33,7 @@ class AdminAccountInitializerTest {
     void run_conCredencialesNuevas_creaAdminConPasswordHasheada() throws Exception {
         AdminAccountInitializer initializer = new AdminAccountInitializer(userRepository, passwordHasher,
                 "admin@test.com", "secret-password");
-        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.empty());
+        when(userRepository.findFirstByEmail("admin@test.com")).thenReturn(Optional.empty());
         when(passwordHasher.hash("secret-password")).thenReturn("hashed-password");
 
         initializer.run(null);
@@ -61,7 +61,7 @@ class AdminAccountInitializerTest {
                 "admin@test.com", "new-password");
         User existingAdmin = new User("admin-id", "Administrador", "admin@test.com", "ADMIN",
                 "0000000000", "old-hash", RoleEnum.ADMIN);
-        when(userRepository.findByEmail("admin@test.com")).thenReturn(Optional.of(existingAdmin));
+        when(userRepository.findFirstByEmail("admin@test.com")).thenReturn(Optional.of(existingAdmin));
         when(passwordHasher.matches("new-password", "old-hash")).thenReturn(false);
         when(passwordHasher.hash("new-password")).thenReturn("new-hash");
 
