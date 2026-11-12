@@ -14,6 +14,7 @@ import com.piedrazul.api.citas.security.AuthenticatedUserArgumentResolver;
 import com.piedrazul.api.citas.security.CitasAuthorizationInterceptor;
 import com.piedrazul.api.scheduling.security.SchedulingAuthorizationInterceptor;
 import com.piedrazul.api.citas.security.MedicoAuthorizationInterceptor;
+import com.piedrazul.api.citas.security.ReporteAuthorizationInterceptor;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -22,17 +23,20 @@ public class WebConfig implements WebMvcConfigurer {
     private final SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor;
     private final CitasAuthorizationInterceptor citasAuthorizationInterceptor;   // NUEVO
     private final MedicoAuthorizationInterceptor medicoAuthorizationInterceptor;
+    private final ReporteAuthorizationInterceptor reporteAuthorizationInterceptor;
     private final String frontendOrigin;
 
         public WebConfig(AuthenticatedUserArgumentResolver authenticatedUserArgumentResolver,
             SchedulingAuthorizationInterceptor schedulingAuthorizationInterceptor,
             CitasAuthorizationInterceptor citasAuthorizationInterceptor,
             MedicoAuthorizationInterceptor medicoAuthorizationInterceptor,
+            ReporteAuthorizationInterceptor reporteAuthorizationInterceptor,
             @Value("${app.cors.allowed-origin:http://localhost:4200}") String frontendOrigin) {
         this.authenticatedUserArgumentResolver = authenticatedUserArgumentResolver;
         this.schedulingAuthorizationInterceptor = schedulingAuthorizationInterceptor;
         this.citasAuthorizationInterceptor = citasAuthorizationInterceptor;
         this.medicoAuthorizationInterceptor = medicoAuthorizationInterceptor;
+        this.reporteAuthorizationInterceptor = reporteAuthorizationInterceptor;
         this.frontendOrigin = frontendOrigin;
     }
 
@@ -62,5 +66,8 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(medicoAuthorizationInterceptor)
                 .addPathPatterns("/api/medico/**");
+
+        registry.addInterceptor(reporteAuthorizationInterceptor)
+                .addPathPatterns("/api/reportes/**");
     }
 }

@@ -48,4 +48,9 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
 
     // Historial: citas del paciente, mas recientes primero
     List<Cita> findByPacienteIdOrderByFechaDescHoraDesc(String pacienteId);
+
+    // Reportes: citas en un rango de fechas excluyendo un estado (ej. CANCELADA)
+    List<Cita> findByFechaBetweenAndEstadoNot(LocalDate desde, LocalDate hasta, EstadoCita estadoExcluido);
+
+    List<Cita> findByMedicoIdAndFechaBetweenAndEstadoNot(String medicoId, LocalDate desde, LocalDate hasta, EstadoCita estadoExcluido);
 }
