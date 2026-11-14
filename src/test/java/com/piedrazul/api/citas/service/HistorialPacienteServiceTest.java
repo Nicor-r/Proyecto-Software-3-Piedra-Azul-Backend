@@ -26,6 +26,8 @@ import com.piedrazul.api.citas.dto.HistorialPacienteResponse;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
 import com.piedrazul.api.iam.domain.RoleEnum;
 import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
@@ -45,12 +47,16 @@ class HistorialPacienteServiceTest {
     @Mock
     private DoctorRepository doctorRepository;
 
+    @Mock
+    private SpringDataTerapistaRepository terapistaRepository;
+
     private HistorialPacienteService service;
     private User paciente;
 
     @BeforeEach
     void setUp() {
-        service = new HistorialPacienteService(userRepository, citaRepository, doctorRepository);
+        service = new HistorialPacienteService(
+                userRepository, citaRepository, doctorRepository, terapistaRepository);
         paciente = new User("pac-1", "Ana Ruiz", EMAIL, CEDULA, "3001112233", "hash", RoleEnum.PATIENT);
     }
 
@@ -85,6 +91,7 @@ class HistorialPacienteServiceTest {
         assertThat(respuesta.total()).isZero();
         assertThat(respuesta.citas()).isEmpty();
         verify(doctorRepository, never()).findAll();
+        verify(terapistaRepository, never()).findAll();
     }
 
     @Test
@@ -137,5 +144,33 @@ class HistorialPacienteServiceTest {
         HistorialPacienteResponse respuesta = service.consultarPorCedula(CEDULA);
 
         assertThat(respuesta.citas().get(0).medicoNombre()).isEqualTo("ter-99");
+    }
+
+    @Test
+    void consultarPorCedula_citasDeDoctorYTerapista_resuelveNombresConEspecialidadYFallbackId() {
+        Cita citaDoctor = new Cita(EMAIL, "doc-4", LocalDate.of(2026, 11, 7), LocalTime.of(14, 0), EstadoCita.CONFIRMADA);
+        Cita citaTerapistaConEspecialidad = new Cita(EMAIL, "ter-001", LocalDate.of(2026, 11, 5), LocalTime.of(10, 0), EstadoCita.PENDIENTE);
+        Cita citaTerapistaSinEspecialidad = new Cita(EMAIL, "ter-002", LocalDate.of(2026, 11, 3), LocalTime.of(9, 0), EstadoCita.COMPLETADA);
+        Cita citaDesconocida = new Cita(EMAIL, "ext-99", LocalDate.of(2026, 11, 1), LocalTime.of(8, 0), EstadoCita.CANCELADA);
+
+        when(userRepository.findByNumeroIdentificacion(CEDULA)).thenReturn(Optional.of(paciente));
+        when(citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(EMAIL))
+                .thenReturn(List.of(citaDoctor, citaTerapistaConEspecialidad, citaTerapistaSinEspecialidad, citaDesconocida));
+        when(doctorRepository.findAll()).thenReturn(List.of(
+                new Doctor("doc-4", "Dra. Ibis Gonzalez", true)));
+        when(terapistaRepository.findAll()).thenReturn(List.of(
+                new TerapistaJpaEntity("ter-001", "u-ter-1", "Dra. Ana Terapista", "Terapia Física"),
+                new TerapistaJpaEntity("ter-002", "u-ter-2", "Dr. Luis Perez", " ")));
+
+        HistorialPacienteResponse respuesta = service.consultarPorCedula(CEDULA);
+
+        assertThat(respuesta.total()).isEqualTo(4);
+        assertThat(respuesta.citas())
+                .extracting(CitaHistorialDTO::medicoNombre)
+                .containsExactly(
+                        "Dra. Ibis Gonzalez",
+                        "Dra. Ana Terapista - Terapia Física",
+                        "Dr. Luis Perez",
+                        "ext-99");
     }
 }

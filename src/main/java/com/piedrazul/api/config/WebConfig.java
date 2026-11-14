@@ -62,7 +62,8 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(citasAuthorizationInterceptor)
                 .addPathPatterns("/api/citas/exportar",
-                        "/api/citas/paciente/**");
+                        "/api/citas/paciente/**",
+                        "/api/citas/pacientes/sugerencias");
 
         registry.addInterceptor(medicoAuthorizationInterceptor)
                 .addPathPatterns("/api/medico/**");

@@ -1,8 +1,8 @@
 package com.piedrazul.api.citas.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +14,8 @@ import com.piedrazul.api.citas.dto.HistorialPacienteResponse;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
 import com.piedrazul.api.iam.domain.RoleEnum;
 import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity;
+import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
@@ -33,13 +35,16 @@ public class HistorialPacienteService {
     private final UserRepository userRepository;
     private final CitaRepository citaRepository;
     private final DoctorRepository doctorRepository;
+    private final SpringDataTerapistaRepository terapistaRepository;
 
     public HistorialPacienteService(UserRepository userRepository,
                                     CitaRepository citaRepository,
-                                    DoctorRepository doctorRepository) {
+                                    DoctorRepository doctorRepository,
+                                    SpringDataTerapistaRepository terapistaRepository) {
         this.userRepository = userRepository;
         this.citaRepository = citaRepository;
         this.doctorRepository = doctorRepository;
+        this.terapistaRepository = terapistaRepository;
     }
 
     @Transactional(readOnly = true)
@@ -61,9 +66,8 @@ public class HistorialPacienteService {
             return new HistorialPacienteResponse(cedula.getValor(), paciente.getNombreCompleto(), 0, List.of());
         }
 
-        // 5. Escenario 1: "libreta" id -> nombre de todos los medicos, consultada UNA sola vez.
-        Map<String, String> nombresMedicos = doctorRepository.findAll().stream()
-                .collect(Collectors.toMap(Doctor::getId, Doctor::getNombre));
+        // 5. Escenario 1: "libreta" id -> nombre de todos los doctores y terapistas, consultada UNA sola vez.
+        Map<String, String> nombresMedicos = construirCatalogoNombres();
 
         List<CitaHistorialDTO> filas = citas.stream()
                 .map(cita -> new CitaHistorialDTO(
@@ -75,5 +79,24 @@ public class HistorialPacienteService {
                 .toList();
 
         return new HistorialPacienteResponse(cedula.getValor(), paciente.getNombreCompleto(), filas.size(), filas);
+    }
+
+    private Map<String, String> construirCatalogoNombres() {
+        Map<String, String> nombres = new HashMap<>();
+        for (Doctor doctor : doctorRepository.findAll()) {
+            nombres.put(doctor.getId(), doctor.getNombre());
+        }
+        for (TerapistaJpaEntity terapista : terapistaRepository.findAll()) {
+            nombres.putIfAbsent(terapista.getId(), formatearNombreTerapista(terapista));
+        }
+        return nombres;
+    }
+
+    static String formatearNombreTerapista(TerapistaJpaEntity terapista) {
+        String especialidad = terapista.getEspecialidad();
+        if (especialidad != null && !especialidad.isBlank()) {
+            return terapista.getNombre() + " - " + especialidad.trim();
+        }
+        return terapista.getNombre();
     }
 }

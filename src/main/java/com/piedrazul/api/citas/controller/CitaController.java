@@ -20,9 +20,11 @@ import com.piedrazul.api.citas.dto.AgendarCitaRequest;
 import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.CitaDetalleDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
+import com.piedrazul.api.citas.dto.PacienteSugerenciaDTO;
 import com.piedrazul.api.citas.security.AuthenticatedUser;
 import com.piedrazul.api.citas.service.CitaCsvExporter;
 import com.piedrazul.api.citas.service.CitaService;
+import com.piedrazul.api.citas.service.SugerenciaPacientesService;
 import com.piedrazul.api.iam.domain.User;
 import com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity;
 import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
@@ -38,15 +40,18 @@ public class CitaController {
     private final CitaCsvExporter csvExporter;
     private final UserRepository userRepository;
     private final SpringDataTerapistaRepository terapistaRepository; // NUEVO
+    private final SugerenciaPacientesService sugerenciaPacientesService;
 
     public CitaController(CitaService citaService,
             CitaCsvExporter csvExporter,
             UserRepository userRepository,
-            SpringDataTerapistaRepository terapistaRepository) {
+            SpringDataTerapistaRepository terapistaRepository,
+            SugerenciaPacientesService sugerenciaPacientesService) {
         this.citaService = citaService;
         this.csvExporter = csvExporter;
         this.userRepository = userRepository;
         this.terapistaRepository = terapistaRepository;
+        this.sugerenciaPacientesService = sugerenciaPacientesService;
     }
 
     @GetMapping("/disponibles")
@@ -101,5 +106,14 @@ public class CitaController {
     @GetMapping("/paciente/{cedula}")
     public ResponseEntity<List<CitaDTO>> historialPorCedula(@PathVariable String cedula) {
         return ResponseEntity.ok(citaService.listarPorCedulaPaciente(cedula));
+    }
+
+    /**
+     * Autocompletado compartido de pacientes por prefijo de cedula (para roles autorizados como THERAPIST).
+     */
+    @GetMapping("/pacientes/sugerencias")
+    public ResponseEntity<List<PacienteSugerenciaDTO>> sugerirPacientes(
+            @RequestParam(required = false) String cedula) {
+        return ResponseEntity.ok(sugerenciaPacientesService.sugerirPorCedula(cedula));
     }
 }

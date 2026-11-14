@@ -6,7 +6,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -318,24 +320,35 @@ public class CitaService {
             citas = citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(paciente.getEmail());
         }
 
-        // Mapear a CitaDTO cruzando los nombres
+        // Mapear a CitaDTO cruzando los nombres con DoctorRepository y TerapistaRepository
+        Map<String, String> cacheNombresMedicos = new HashMap<>();
         return citas.stream().map(cita -> {
-            String nombreMedico = userRepository.findById(cita.getMedicoId())
-                    .map(User::getNombreCompleto)
-                    .orElseGet(() -> terapistaRepository.findById(cita.getMedicoId())
-                            .map(com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity::getNombre)
-                            .orElse("Médico #" + cita.getMedicoId()));
+            String medicoId = cita.getMedicoId();
+            String nombreMedico = medicoId == null
+                    ? null
+                    : cacheNombresMedicos.computeIfAbsent(medicoId, this::resolverNombreProfesional);
 
             return new CitaDTO(
                     cita.getId(),
                     cita.getPacienteId(),
-                    cita.getMedicoId(),
+                    medicoId,
                     cita.getFecha(),
                     cita.getHora(),
                     cita.getEstado(),
                     paciente.getNombreCompleto(), // Nombre del paciente
-                    nombreMedico // Nombre del médico
+                    nombreMedico // Nombre del médico/terapista
             );
         }).toList();
+    }
+
+    private String resolverNombreProfesional(String medicoId) {
+        if (medicoId.isBlank()) {
+            return medicoId;
+        }
+        return doctorRepository.findById(medicoId)
+                .map(Doctor::getNombre)
+                .orElseGet(() -> terapistaRepository.findById(medicoId)
+                        .map(HistorialPacienteService::formatearNombreTerapista)
+                        .orElse(medicoId));
     }
 }

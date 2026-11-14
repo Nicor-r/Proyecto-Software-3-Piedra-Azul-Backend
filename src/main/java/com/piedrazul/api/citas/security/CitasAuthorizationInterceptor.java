@@ -24,6 +24,9 @@ public class CitasAuthorizationInterceptor implements HandlerInterceptor {
     private static final Set<RoleEnum> HISTORIAL_ROLES =
         Set.of(RoleEnum.THERAPIST, RoleEnum.ADMIN, RoleEnum.PATIENT, RoleEnum.AGENDADOR);
 
+    private static final Set<RoleEnum> SUGERENCIAS_ROLES =
+        Set.of(RoleEnum.THERAPIST, RoleEnum.MEDICO, RoleEnum.ADMIN, RoleEnum.AGENDADOR);
+
     private final TokenProvider tokenProvider;
 
     public CitasAuthorizationInterceptor(TokenProvider tokenProvider) {
@@ -76,6 +79,14 @@ public class CitasAuthorizationInterceptor implements HandlerInterceptor {
             if (!HISTORIAL_ROLES.contains(role)) {
                 throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "Rol no autorizado para consultar historial");
+            }
+            return true;
+        }
+
+        if (path.startsWith("/api/citas/pacientes/sugerencias")) {
+            if (!SUGERENCIAS_ROLES.contains(role)) {
+                throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Rol no autorizado para consultar sugerencias de pacientes");
             }
             return true;
         }

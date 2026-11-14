@@ -25,6 +25,9 @@ import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
 import com.piedrazul.api.citas.exception.FranjaNoDisponibleException;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
+import com.piedrazul.api.iam.domain.RoleEnum;
+import com.piedrazul.api.iam.domain.User;
+import com.piedrazul.api.iam.infrastructure.entity.TerapistaJpaEntity;
 import com.piedrazul.api.iam.infrastructure.repository.SpringDataTerapistaRepository;
 import com.piedrazul.api.iam.repository.UserRepository;
 import com.piedrazul.api.scheduling.domain.ConfiguracionAgenda;
@@ -270,5 +273,47 @@ class CitaServiceTest {
 
         assertThat(misCitas).hasSize(1);
         assertThat(misCitas.get(0).getId()).isEqualTo(1L);
+    }
+
+    @Test
+    void listarPorCedulaPaciente_conDoctoresYTerapistas_resuelveNombresConEspecialidadYFallbackId() {
+        User paciente = new User("pac-1", "Ana Ruiz", PACIENTE_ID, "1061000001", "3001112233", "hash", RoleEnum.PATIENT);
+        Cita citaDoctor = new Cita(PACIENTE_ID, "doc-5", LocalDate.of(2026, 11, 7), LocalTime.of(14, 0), EstadoCita.CONFIRMADA);
+        citaDoctor.setId(1L);
+        Cita citaTerapista = new Cita(PACIENTE_ID, "ter-001", LocalDate.of(2026, 11, 5), LocalTime.of(10, 0), EstadoCita.PENDIENTE);
+        citaTerapista.setId(2L);
+        Cita citaTerapistaSinEsp = new Cita(PACIENTE_ID, "ter-002", LocalDate.of(2026, 11, 3), LocalTime.of(9, 0), EstadoCita.COMPLETADA);
+        citaTerapistaSinEsp.setId(3L);
+        Cita citaDesconocida = new Cita(PACIENTE_ID, "desconocido-99", LocalDate.of(2026, 11, 1), LocalTime.of(8, 0), EstadoCita.CANCELADA);
+        citaDesconocida.setId(4L);
+
+        when(userRepository.findByNumeroIdentificacion("1061000001")).thenReturn(Optional.of(paciente));
+        when(citaRepository.findByPacienteIdOrderByFechaDescHoraDesc("pac-1")).thenReturn(Collections.emptyList());
+        when(citaRepository.findByPacienteIdOrderByFechaDescHoraDesc(PACIENTE_ID))
+                .thenReturn(List.of(citaDoctor, citaTerapista, citaTerapistaSinEsp, citaDesconocida));
+
+        when(doctorRepository.findById("doc-5")).thenReturn(Optional.of(new Doctor("doc-5", "Dr. Carlos Gomez", true)));
+        when(doctorRepository.findById("ter-001")).thenReturn(Optional.empty());
+        when(terapistaRepository.findById("ter-001"))
+                .thenReturn(Optional.of(new TerapistaJpaEntity("ter-001", "u-ter-1", "Dra. Ana Terapista", "Terapia Física")));
+        when(doctorRepository.findById("ter-002")).thenReturn(Optional.empty());
+        when(terapistaRepository.findById("ter-002"))
+                .thenReturn(Optional.of(new TerapistaJpaEntity("ter-002", "u-ter-2", "Dr. Luis Perez", "")));
+        when(doctorRepository.findById("desconocido-99")).thenReturn(Optional.empty());
+        when(terapistaRepository.findById("desconocido-99")).thenReturn(Optional.empty());
+
+        List<CitaDTO> respuesta = service.listarPorCedulaPaciente("1061000001");
+
+        assertThat(respuesta).hasSize(4);
+        assertThat(respuesta)
+                .extracting(CitaDTO::getPacienteNombre)
+                .containsOnly("Ana Ruiz");
+        assertThat(respuesta)
+                .extracting(CitaDTO::getMedicoNombre)
+                .containsExactly(
+                        "Dr. Carlos Gomez",
+                        "Dra. Ana Terapista - Terapia Física",
+                        "Dr. Luis Perez",
+                        "desconocido-99");
     }
 }
