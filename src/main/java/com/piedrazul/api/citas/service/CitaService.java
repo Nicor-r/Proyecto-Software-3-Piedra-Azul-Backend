@@ -100,6 +100,7 @@ public class CitaService {
         Set<LocalTime> horasOcupadas = citaRepository
                 .findByMedicoIdAndFecha(medicoId, fecha)
                 .stream()
+                .filter(c -> c.getEstado() != EstadoCita.CANCELADA)
                 .map(Cita::getHora)
                 .collect(Collectors.toSet());
 
@@ -120,8 +121,8 @@ public class CitaService {
     public CitaDTO agendarCita(AgendarCitaRequest request, String pacienteId) {
         validarRequest(request, pacienteId);
 
-        boolean ocupada = citaRepository.existsByMedicoIdAndFechaAndHora(
-                request.getMedicoId(), request.getFecha(), request.getHora());
+        boolean ocupada = citaRepository.existsByMedicoIdAndFechaAndHoraAndEstadoNot(
+                request.getMedicoId(), request.getFecha(), request.getHora(), EstadoCita.CANCELADA);
 
         if (ocupada) {
             throw new FranjaNoDisponibleException(

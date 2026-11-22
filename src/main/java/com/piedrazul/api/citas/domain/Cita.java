@@ -14,16 +14,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(
-        name = "citas",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_cita_medico_fecha_hora",
-                columnNames = {"medico_id", "fecha", "hora"}
-        )
-)
+@Table(name = "citas")
 public class Cita {
 
     @Id
