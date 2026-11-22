@@ -1,6 +1,7 @@
 package com.piedrazul.api.citas.security;
 
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,11 @@ public class CitasAuthorizationInterceptor implements HandlerInterceptor {
 
     private static final Set<RoleEnum> SUGERENCIAS_ROLES =
         Set.of(RoleEnum.THERAPIST, RoleEnum.MEDICO, RoleEnum.ADMIN, RoleEnum.AGENDADOR);
+
+    private static final Pattern RUTA_CANCELAR = Pattern.compile("^/api/citas/[^/]+/cancelar/?$");
+
+    private static final Set<RoleEnum> CANCELAR_ROLES =
+        Set.of(RoleEnum.PATIENT);
 
     private final TokenProvider tokenProvider;
 
@@ -66,6 +72,14 @@ public class CitasAuthorizationInterceptor implements HandlerInterceptor {
         }
 
         String path = request.getRequestURI();
+
+        if (RUTA_CANCELAR.matcher(path).matches()) {
+            if (!CANCELAR_ROLES.contains(role)) {
+                throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "Solo un paciente puede cancelar sus citas");
+            }
+            return true;
+        }
 
         if (path.startsWith("/api/citas/exportar")) {
             if (!EXPORT_ROLES.contains(role)) {

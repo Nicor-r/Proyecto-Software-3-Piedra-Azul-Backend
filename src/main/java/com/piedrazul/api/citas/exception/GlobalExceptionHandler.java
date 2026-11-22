@@ -25,6 +25,16 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(CancelacionNoPermitidaException.class)
+    public ResponseEntity<Map<String, Object>> handleCancelacionNoPermitida(CancelacionNoPermitidaException ex) {
+        return ResponseEntity.badRequest().body(Map.of(
+                "timestamp", LocalDateTime.now().toString(),
+                "status", 400,
+                "error", "BAD_REQUEST",
+                "message", ex.getMessage()
+        ));
+    }
+
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<Map<String, Object>> handleUnauthorized(UnauthorizedException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(

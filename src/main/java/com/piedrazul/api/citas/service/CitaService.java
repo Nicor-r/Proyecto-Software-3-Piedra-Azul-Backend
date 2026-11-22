@@ -219,7 +219,7 @@ public class CitaService {
                                     .orElse("Médico #" + cita.getMedicoId()));
 
                     // 4. Creamos el DTO con los 8 parámetros
-                    return new CitaDTO(
+                    return conCancelacion(new CitaDTO(
                             cita.getId(),
                             cita.getPacienteId(),
                             cita.getMedicoId(),
@@ -228,7 +228,7 @@ public class CitaService {
                             cita.getEstado(),
                             nombrePaciente, // <-- Pasamos el nombre que hallamos arriba
                             nombreMedico // <-- Pasamos el nombre del médico/terapista
-                    );
+                    ), cita);
                 })
                 .toList();
     }
@@ -303,14 +303,20 @@ public class CitaService {
     }
 
     private CitaDTO toDTO(Cita cita) {
-        return new CitaDTO(
+        return conCancelacion(new CitaDTO(
                 cita.getId(),
                 cita.getPacienteId(),
                 cita.getMedicoId(),
                 cita.getFecha(),
                 cita.getHora(),
                 cita.getEstado()
-        );
+        ), cita);
+    }
+
+    private CitaDTO conCancelacion(CitaDTO dto, Cita cita) {
+        dto.setMotivoCancelacion(cita.getMotivoCancelacion());
+        dto.setFechaCancelacion(cita.getFechaCancelacion());
+        return dto;
     }
 
     // Inyecciones adicionales al constructor:
@@ -374,7 +380,7 @@ public class CitaService {
                     ? null
                     : cacheNombresMedicos.computeIfAbsent(medicoId, this::resolverNombreProfesional);
 
-            return new CitaDTO(
+            return conCancelacion(new CitaDTO(
                     cita.getId(),
                     cita.getPacienteId(),
                     medicoId,
@@ -383,7 +389,7 @@ public class CitaService {
                     cita.getEstado(),
                     paciente.getNombreCompleto(), // Nombre del paciente
                     nombreMedico // Nombre del médico/terapista
-            );
+            ), cita);
         }).toList();
     }
 

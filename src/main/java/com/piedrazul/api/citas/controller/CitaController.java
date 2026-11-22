@@ -11,12 +11,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.piedrazul.api.citas.dto.AgendarCitaRequest;
+import com.piedrazul.api.citas.dto.CancelarCitaRequest;
 import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.CitaDetalleDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
@@ -66,6 +68,17 @@ public class CitaController {
             @AuthenticatedUser String pacienteEmail) {
         CitaDTO cita = citaService.agendarCita(request, pacienteEmail);
         return ResponseEntity.status(HttpStatus.CREATED).body(cita);
+    }
+
+    /**
+     * RF6: el paciente cancela una cita propia indicando la justificación.
+     * Solo rol PATIENT (ver CitasAuthorizationInterceptor).
+     */
+    @PutMapping("/{id}/cancelar")
+    public ResponseEntity<CitaDTO> cancelarCita(@PathVariable Long id,
+            @RequestBody @Valid CancelarCitaRequest request,
+            @AuthenticatedUser String pacienteEmail) {
+        return ResponseEntity.ok(citaService.cancelarCita(id, pacienteEmail, request.getMotivo()));
     }
 
     @GetMapping("/mis-citas")

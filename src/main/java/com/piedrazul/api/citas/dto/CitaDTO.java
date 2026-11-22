@@ -1,6 +1,7 @@
 package com.piedrazul.api.citas.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.piedrazul.api.citas.domain.EstadoCita;
@@ -14,6 +15,8 @@ public class CitaDTO {
     private EstadoCita estado;
     private String pacienteNombre;
     private String medicoNombre;
+    private String motivoCancelacion;
+    private LocalDateTime fechaCancelacion;
 
     public CitaDTO() {}
 
@@ -99,5 +102,21 @@ public class CitaDTO {
 
     public void setMedicoNombre(String medicoNombre) {
         this.medicoNombre = medicoNombre;
+    }
+
+    public String getMotivoCancelacion() {
+        return motivoCancelacion;
+    }
+
+    public void setMotivoCancelacion(String motivoCancelacion) {
+        this.motivoCancelacion = motivoCancelacion;
+    }
+
+    public LocalDateTime getFechaCancelacion() {
+        return fechaCancelacion;
+    }
+
+    public void setFechaCancelacion(LocalDateTime fechaCancelacion) {
+        this.fechaCancelacion = fechaCancelacion;
     }
 }
