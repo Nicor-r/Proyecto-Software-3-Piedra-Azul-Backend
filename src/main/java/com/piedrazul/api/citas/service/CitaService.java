@@ -2,6 +2,7 @@ package com.piedrazul.api.citas.service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -149,6 +150,50 @@ public class CitaService {
                     request.getMedicoId(), request.getFecha(), request.getHora());
             throw new FranjaNoDisponibleException("La franja ya fue reservada por otro usuario");
         }
+    }
+
+    /**
+     * Cancela una cita del paciente autenticado (RF6). La regla de los 2 días y la
+     * justificación obligatoria viven en {@link Cita#cancelar}; aquí solo se verifica
+     * que la cita exista y pertenezca a quien la cancela.
+     */
+    @Transactional
+    public CitaDTO cancelarCita(Long citaId, String pacienteEmail, String motivo) {
+        return cancelarCita(citaId, pacienteEmail, motivo, LocalDateTime.now());
+    }
+
+    @Transactional
+    CitaDTO cancelarCita(Long citaId, String pacienteEmail, String motivo, LocalDateTime ahora) {
+        if (pacienteEmail == null || pacienteEmail.isBlank()) {
+            throw new IllegalArgumentException("El paciente no está autenticado");
+        }
+
+        Cita cita = citaRepository.findById(citaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No existe la cita con id " + citaId));
+
+        if (!esCitaDelPaciente(cita, pacienteEmail)) {
+            log.warn("Intento de cancelar la cita id={} por un paciente que no es su dueño ({})", citaId, pacienteEmail);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La cita no pertenece al paciente autenticado");
+        }
+
+        cita.cancelar(motivo, ahora);
+        Cita guardada = citaRepository.save(cita);
+        log.info("Cita cancelada id={} paciente={} medico={} fecha={} hora={}",
+                guardada.getId(), pacienteEmail, guardada.getMedicoId(), guardada.getFecha(), guardada.getHora());
+
+        return toDTO(guardada);
+    }
+
+    /** La cita guarda el email del paciente, pero las semillas antiguas usan su id. */
+    private boolean esCitaDelPaciente(Cita cita, String pacienteEmail) {
+        if (pacienteEmail.equals(cita.getPacienteId())) {
+            return true;
+        }
+        return userRepository.findByEmail(pacienteEmail)
+                .map(User::getId)
+                .filter(id -> id.equals(cita.getPacienteId()))
+                .isPresent();
     }
 
     @Transactional(readOnly = true)
