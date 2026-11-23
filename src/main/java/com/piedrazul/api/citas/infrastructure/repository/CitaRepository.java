@@ -21,6 +21,10 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
     // Verificar si ya existe una cita en una franja específica
     boolean existsByMedicoIdAndFechaAndHora(String medicoId, LocalDate fecha, LocalTime hora);
 
+    // Verificar si ya existe una cita en una franja específica pero excluyendo citas canceladas
+
+    boolean existsByMedicoIdAndFechaAndHoraAndEstadoNot(String medicoId, LocalDate fecha, LocalTime hora, EstadoCita estadoExcluido);
+
     // Opcional: buscar todas las citas de un paciente
     List<Cita> findByPacienteId(String pacienteId);
 

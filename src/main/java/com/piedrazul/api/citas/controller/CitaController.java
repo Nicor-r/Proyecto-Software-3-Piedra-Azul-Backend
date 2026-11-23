@@ -21,6 +21,8 @@ import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.CitaDetalleDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
 import com.piedrazul.api.citas.dto.PacienteSugerenciaDTO;
+import com.piedrazul.api.citas.dto.ReagendarCitaRequest;
+import com.piedrazul.api.citas.dto.CancelarCitaRequest;
 import com.piedrazul.api.citas.security.AuthenticatedUser;
 import com.piedrazul.api.citas.service.CitaCsvExporter;
 import com.piedrazul.api.citas.service.CitaService;
@@ -71,6 +73,22 @@ public class CitaController {
     @GetMapping("/mis-citas")
     public ResponseEntity<List<CitaDTO>> obtenerMisCitas(@AuthenticatedUser String pacienteEmail) {
         return ResponseEntity.ok(citaService.obtenerMisCitas(pacienteEmail));
+    }
+
+    //Mapping de cancelar
+    @PostMapping("/cancelar")
+        public ResponseEntity<Void> cancelarCita(@RequestBody @Valid CancelarCitaRequest request,
+            @AuthenticatedUser String pacienteEmail) {
+        citaService.cancelarCitaPorPaciente(request, pacienteEmail);
+        return ResponseEntity.noContent().build();
+    }
+
+    //Mapping de re-agendar
+    @PostMapping("/reagendar")
+    public ResponseEntity<CitaDTO> reagendarCita(@RequestBody @Valid ReagendarCitaRequest request,
+            @AuthenticatedUser String medicoId) {
+        CitaDTO cita = citaService.reagendarCitaPorMedico(request, medicoId);
+        return ResponseEntity.ok(cita);
     }
 
     /**
