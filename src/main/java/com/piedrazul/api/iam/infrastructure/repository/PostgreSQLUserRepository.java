@@ -5,19 +5,19 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import com.piedrazul.api.iam.domain.RoleEnum;
 import com.piedrazul.api.iam.domain.User;
 import com.piedrazul.api.iam.infrastructure.entity.UserJpaEntity;
 import com.piedrazul.api.iam.mapper.UserEntityMapper;
 import com.piedrazul.api.iam.repository.UserRepository;
-import com.piedrazul.api.iam.domain.RoleEnum;
 
 @Repository
-public class SqliteUserRepository implements UserRepository {
+public class PostgreSQLUserRepository implements UserRepository {
 
     private final SpringDataUserRepository springDataUserRepository;
     private final UserEntityMapper userEntityMapper;
 
-    public SqliteUserRepository(SpringDataUserRepository springDataUserRepository,
+    public PostgreSQLUserRepository(SpringDataUserRepository springDataUserRepository,
             UserEntityMapper userEntityMapper) {
         this.springDataUserRepository = springDataUserRepository;
         this.userEntityMapper = userEntityMapper;
