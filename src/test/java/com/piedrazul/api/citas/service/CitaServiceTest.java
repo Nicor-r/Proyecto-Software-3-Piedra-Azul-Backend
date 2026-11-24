@@ -95,6 +95,22 @@ class CitaServiceTest {
     }
 
     @Test
+    void obtenerFranjasDisponibles_citaCancelada_liberaLaFranja() {
+        when(doctorRepository.findById(MEDICO_ID)).thenReturn(Optional.of(DOCTOR_ACTIVO));
+        when(configuracionAgendaRepository.findByDoctorId(MEDICO_ID)).thenReturn(Optional.empty());
+        Cita cancelada = new Cita(PACIENTE_ID, MEDICO_ID, FECHA_FUTURA, LocalTime.of(8, 0), EstadoCita.CANCELADA);
+        when(citaRepository.findByMedicoIdAndFecha(MEDICO_ID, FECHA_FUTURA)).thenReturn(List.of(cancelada));
+
+        List<FranjaDTO> franjas = service.obtenerFranjasDisponibles(MEDICO_ID, FECHA_FUTURA);
+
+        FranjaDTO franja8am = franjas.stream()
+                .filter(f -> f.getHora().equals(LocalTime.of(8, 0)))
+                .findFirst()
+                .orElseThrow();
+        assertThat(franja8am.isDisponible()).isTrue();
+    }
+
+    @Test
     void obtenerFranjasDisponibles_conConfiguracionPersonalizada_generaFranjasSegunConfiguracion() {
         when(doctorRepository.findById(MEDICO_ID)).thenReturn(Optional.of(DOCTOR_ACTIVO));
 
@@ -186,7 +202,7 @@ class CitaServiceTest {
 
         when(doctorRepository.findById(MEDICO_ID)).thenReturn(Optional.of(DOCTOR_ACTIVO));
         when(configuracionAgendaRepository.findByDoctorId(MEDICO_ID)).thenReturn(Optional.empty());
-        when(citaRepository.existsByMedicoIdAndFechaAndHora(MEDICO_ID, FECHA_FUTURA, hora))
+        when(citaRepository.existsByMedicoIdAndFechaAndHoraAndEstadoNot(MEDICO_ID, FECHA_FUTURA, hora, EstadoCita.CANCELADA))
                 .thenReturn(false);
 
         Cita citaGuardada = new Cita(PACIENTE_ID, MEDICO_ID, FECHA_FUTURA, hora, EstadoCita.PENDIENTE);
@@ -207,7 +223,7 @@ class CitaServiceTest {
 
         when(doctorRepository.findById(MEDICO_ID)).thenReturn(Optional.of(DOCTOR_ACTIVO));
         when(configuracionAgendaRepository.findByDoctorId(MEDICO_ID)).thenReturn(Optional.empty());
-        when(citaRepository.existsByMedicoIdAndFechaAndHora(MEDICO_ID, FECHA_FUTURA, hora))
+        when(citaRepository.existsByMedicoIdAndFechaAndHoraAndEstadoNot(MEDICO_ID, FECHA_FUTURA, hora, EstadoCita.CANCELADA))
                 .thenReturn(true);
 
         assertThatThrownBy(() -> service.agendarCita(request, PACIENTE_ID))

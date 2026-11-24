@@ -84,4 +84,42 @@ class CitasAuthorizationInterceptorTest {
 
         assertThat(allowed).isTrue();
     }
+
+    @Test
+    void preHandle_cancelarConTokenPaciente_permiteAcceso() {
+        MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/api/citas/7/cancelar");
+        request.addHeader("Authorization", "Bearer paciente-token");
+        when(tokenProvider.validateToken("paciente-token")).thenReturn(true);
+        when(tokenProvider.getRoleFromToken("paciente-token")).thenReturn(RoleEnum.PATIENT);
+
+        boolean allowed = interceptor.preHandle(request, new MockHttpServletResponse(), new Object());
+
+        assertThat(allowed).isTrue();
+    }
+
+    @Test
+    void preHandle_cancelarConOtrosRoles_retornaForbidden() {
+        for (RoleEnum rol : new RoleEnum[] { RoleEnum.ADMIN, RoleEnum.AGENDADOR, RoleEnum.MEDICO, RoleEnum.THERAPIST }) {
+            String token = "token-" + rol.name();
+            MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/api/citas/7/cancelar");
+            request.addHeader("Authorization", "Bearer " + token);
+            when(tokenProvider.validateToken(token)).thenReturn(true);
+            when(tokenProvider.getRoleFromToken(token)).thenReturn(rol);
+
+            assertThatThrownBy(() -> interceptor.preHandle(request, new MockHttpServletResponse(), new Object()))
+                    .isInstanceOf(ResponseStatusException.class)
+                    .extracting("statusCode")
+                    .isEqualTo(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Test
+    void preHandle_cancelarSinToken_retornaUnauthorized() {
+        MockHttpServletRequest request = new MockHttpServletRequest("PUT", "/api/citas/7/cancelar");
+
+        assertThatThrownBy(() -> interceptor.preHandle(request, new MockHttpServletResponse(), new Object()))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting("statusCode")
+                .isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
 }

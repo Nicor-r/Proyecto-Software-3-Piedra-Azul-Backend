@@ -2,6 +2,7 @@ package com.piedrazul.api.citas.service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,6 +101,7 @@ public class CitaService {
         Set<LocalTime> horasOcupadas = citaRepository
                 .findByMedicoIdAndFecha(medicoId, fecha)
                 .stream()
+                .filter(c -> c.getEstado() != EstadoCita.CANCELADA)
                 .map(Cita::getHora)
                 .collect(Collectors.toSet());
 
@@ -120,8 +122,8 @@ public class CitaService {
     public CitaDTO agendarCita(AgendarCitaRequest request, String pacienteId) {
         validarRequest(request, pacienteId);
 
-        boolean ocupada = citaRepository.existsByMedicoIdAndFechaAndHora(
-                request.getMedicoId(), request.getFecha(), request.getHora());
+        boolean ocupada = citaRepository.existsByMedicoIdAndFechaAndHoraAndEstadoNot(
+                request.getMedicoId(), request.getFecha(), request.getHora(), EstadoCita.CANCELADA);
 
         if (ocupada) {
             throw new FranjaNoDisponibleException(
@@ -150,6 +152,50 @@ public class CitaService {
         }
     }
 
+    /**
+     * Cancela una cita del paciente autenticado (RF6). La regla de los 2 días y la
+     * justificación obligatoria viven en {@link Cita#cancelar}; aquí solo se verifica
+     * que la cita exista y pertenezca a quien la cancela.
+     */
+    @Transactional
+    public CitaDTO cancelarCita(Long citaId, String pacienteEmail, String motivo) {
+        return cancelarCita(citaId, pacienteEmail, motivo, LocalDateTime.now());
+    }
+
+    @Transactional
+    CitaDTO cancelarCita(Long citaId, String pacienteEmail, String motivo, LocalDateTime ahora) {
+        if (pacienteEmail == null || pacienteEmail.isBlank()) {
+            throw new IllegalArgumentException("El paciente no está autenticado");
+        }
+
+        Cita cita = citaRepository.findById(citaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "No existe la cita con id " + citaId));
+
+        if (!esCitaDelPaciente(cita, pacienteEmail)) {
+            log.warn("Intento de cancelar la cita id={} por un paciente que no es su dueño ({})", citaId, pacienteEmail);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La cita no pertenece al paciente autenticado");
+        }
+
+        cita.cancelar(motivo, ahora);
+        Cita guardada = citaRepository.save(cita);
+        log.info("Cita cancelada id={} paciente={} medico={} fecha={} hora={}",
+                guardada.getId(), pacienteEmail, guardada.getMedicoId(), guardada.getFecha(), guardada.getHora());
+
+        return toDTO(guardada);
+    }
+
+    /** La cita guarda el email del paciente, pero las semillas antiguas usan su id. */
+    private boolean esCitaDelPaciente(Cita cita, String pacienteEmail) {
+        if (pacienteEmail.equals(cita.getPacienteId())) {
+            return true;
+        }
+        return userRepository.findByEmail(pacienteEmail)
+                .map(User::getId)
+                .filter(id -> id.equals(cita.getPacienteId()))
+                .isPresent();
+    }
+
     @Transactional(readOnly = true)
     public List<CitaDTO> obtenerMisCitas(String pacienteEmail) {
         if (pacienteEmail == null || pacienteEmail.isBlank()) {
@@ -173,7 +219,7 @@ public class CitaService {
                                     .orElse("Médico #" + cita.getMedicoId()));
 
                     // 4. Creamos el DTO con los 8 parámetros
-                    return new CitaDTO(
+                    return conCancelacion(new CitaDTO(
                             cita.getId(),
                             cita.getPacienteId(),
                             cita.getMedicoId(),
@@ -182,7 +228,7 @@ public class CitaService {
                             cita.getEstado(),
                             nombrePaciente, // <-- Pasamos el nombre que hallamos arriba
                             nombreMedico // <-- Pasamos el nombre del médico/terapista
-                    );
+                    ), cita);
                 })
                 .toList();
     }
@@ -257,14 +303,20 @@ public class CitaService {
     }
 
     private CitaDTO toDTO(Cita cita) {
-        return new CitaDTO(
+        return conCancelacion(new CitaDTO(
                 cita.getId(),
                 cita.getPacienteId(),
                 cita.getMedicoId(),
                 cita.getFecha(),
                 cita.getHora(),
                 cita.getEstado()
-        );
+        ), cita);
+    }
+
+    private CitaDTO conCancelacion(CitaDTO dto, Cita cita) {
+        dto.setMotivoCancelacion(cita.getMotivoCancelacion());
+        dto.setFechaCancelacion(cita.getFechaCancelacion());
+        return dto;
     }
 
     // Inyecciones adicionales al constructor:
@@ -328,7 +380,7 @@ public class CitaService {
                     ? null
                     : cacheNombresMedicos.computeIfAbsent(medicoId, this::resolverNombreProfesional);
 
-            return new CitaDTO(
+            return conCancelacion(new CitaDTO(
                     cita.getId(),
                     cita.getPacienteId(),
                     medicoId,
@@ -337,7 +389,7 @@ public class CitaService {
                     cita.getEstado(),
                     paciente.getNombreCompleto(), // Nombre del paciente
                     nombreMedico // Nombre del médico/terapista
-            );
+            ), cita);
         }).toList();
     }
 
