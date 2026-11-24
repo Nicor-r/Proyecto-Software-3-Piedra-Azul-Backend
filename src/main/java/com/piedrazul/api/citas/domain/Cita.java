@@ -84,19 +84,6 @@ public class Cita {
         this.fechaCancelacion = ahora;
     }
 
-    /**
-     * Cancela la cita porque el médico/terapista la reagenda. A diferencia de
-     * {@link #cancelar}, no exige anticipación mínima: esa regla es solo del paciente.
-     */
-    public void cancelarPorReagendamiento(String motivo, LocalDateTime ahora) {
-        if (estado != EstadoCita.PENDIENTE) {
-            throw new CancelacionNoPermitidaException("Solo se pueden reagendar citas pendientes");
-        }
-        this.estado = EstadoCita.CANCELADA;
-        this.motivoCancelacion = motivo;
-        this.fechaCancelacion = ahora;
-    }
-
     // Getters y Setters (sin cambios)
     public Long getId() {
         return id;

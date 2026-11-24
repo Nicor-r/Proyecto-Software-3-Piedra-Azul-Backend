@@ -97,24 +97,4 @@ class CitaCancelacionTest {
                 .isInstanceOf(CancelacionNoPermitidaException.class)
                 .hasMessageContaining("completada");
     }
-
-    @Test
-    void reagendarPorMedico_noExigeAnticipacionYGuardaElMotivo() {
-        Cita cita = citaEn(AHORA.plusHours(3), EstadoCita.PENDIENTE);
-
-        cita.cancelarPorReagendamiento("Reagendada por el médico", AHORA);
-
-        assertThat(cita.getEstado()).isEqualTo(EstadoCita.CANCELADA);
-        assertThat(cita.getMotivoCancelacion()).isEqualTo("Reagendada por el médico");
-        assertThat(cita.getFechaCancelacion()).isEqualTo(AHORA);
-    }
-
-    @Test
-    void reagendarUnaCitaNoPendiente_seRechaza() {
-        Cita cita = citaEn(AHORA.plusDays(5), EstadoCita.CANCELADA);
-
-        assertThatThrownBy(() -> cita.cancelarPorReagendamiento("x", AHORA))
-                .isInstanceOf(CancelacionNoPermitidaException.class)
-                .hasMessageContaining("pendientes");
-    }
 }
