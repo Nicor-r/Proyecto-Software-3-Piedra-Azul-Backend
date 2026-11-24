@@ -8,7 +8,7 @@ import com.piedrazul.api.iam.domain.RoleEnum;
 
 /**
  * Contrato de persistencia para la entidad de dominio User. Agnostico a
- * cualquier tecnologia de base de datos (JPA, SQLite, etc.). Los Services
+ * cualquier tecnologia de base de datos (JPA, PostgreSQL, etc.). Los Services
  * dependen UNICAMENTE de esta interfaz, nunca de su implementacion concreta.
  */
 public interface UserRepository {

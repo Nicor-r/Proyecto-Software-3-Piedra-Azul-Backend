@@ -11,7 +11,7 @@ import com.piedrazul.api.scheduling.domain.Doctor;
  *
  * @details
  *          Define el contrato de acceso y persistencia para doctores. Desacopla
- *          los servicios de la tecnología concreta de almacenamiento (SQLite
+ *          los servicios de la tecnología concreta de almacenamiento (PostgreSQL
  *          vía JPA).
  */
 public interface DoctorRepository {

@@ -14,7 +14,7 @@ import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
 /**
  * @file DoctorDataInitializer.java
- * @brief Inicializador que siembra los médicos iniciales en SQLite si la tabla está vacía.
+ * @brief Inicializador que siembra los médicos iniciales en la base de datos si la tabla está vacía.
  */
 @Component
 @Order(1)

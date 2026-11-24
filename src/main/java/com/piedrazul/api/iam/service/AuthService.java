@@ -17,7 +17,7 @@ import com.piedrazul.api.iam.repository.UserRepository;
 /**
  * Orquesta la logica de negocio de registro y autenticacion del modulo iam.
  * Depende UNICAMENTE de las interfaces aprobadas (UserRepository,
- * PasswordHasher, TokenProvider). No conoce JPA, SQLite, BCrypt ni JJWT
+ * PasswordHasher, TokenProvider). No conoce JPA, PostgreSQL, BCrypt ni JJWT
  */
 @Service
 public class AuthService {

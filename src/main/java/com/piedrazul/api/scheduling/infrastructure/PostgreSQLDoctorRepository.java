@@ -11,17 +11,17 @@ import com.piedrazul.api.scheduling.mapper.DoctorEntityMapper;
 import com.piedrazul.api.scheduling.repository.DoctorRepository;
 
 /**
- * @file SqliteDoctorRepository.java
- * @brief Implementación de {@link DoctorRepository} respaldada en SQLite vía
+ * @file PostgreSQLDoctorRepository.java
+ * @brief Implementación de {@link DoctorRepository} respaldada en PostgreSQL vía
  *        Spring Data JPA.
  */
 @Repository
-public class SqliteDoctorRepository implements DoctorRepository {
+public class PostgreSQLDoctorRepository implements DoctorRepository {
 
     private final SpringDataDoctorRepository springDataRepository;
     private final DoctorEntityMapper mapper;
 
-    public SqliteDoctorRepository(SpringDataDoctorRepository springDataRepository,
+    public PostgreSQLDoctorRepository(SpringDataDoctorRepository springDataRepository,
             DoctorEntityMapper mapper) {
         this.springDataRepository = springDataRepository;
         this.mapper = mapper;

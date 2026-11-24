@@ -18,18 +18,18 @@ import com.piedrazul.api.scheduling.domain.Doctor;
 import com.piedrazul.api.scheduling.mapper.DoctorEntityMapper;
 
 @ExtendWith(MockitoExtension.class)
-class SqliteDoctorRepositoryTest {
+class PostgreSQLDoctorRepositoryTest {
 
     @Mock
     private SpringDataDoctorRepository springDataRepository;
 
     private DoctorEntityMapper mapper;
-    private SqliteDoctorRepository repository;
+    private PostgreSQLDoctorRepository repository;
 
     @BeforeEach
     void setUp() {
         mapper = new DoctorEntityMapper();
-        repository = new SqliteDoctorRepository(springDataRepository, mapper);
+        repository = new PostgreSQLDoctorRepository(springDataRepository, mapper);
     }
 
     @Test

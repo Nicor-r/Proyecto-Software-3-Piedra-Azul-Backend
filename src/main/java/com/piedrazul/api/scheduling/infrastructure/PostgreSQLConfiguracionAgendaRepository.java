@@ -10,9 +10,9 @@ import com.piedrazul.api.scheduling.mapper.ConfiguracionAgendaEntityMapper;
 import com.piedrazul.api.scheduling.repository.ConfiguracionAgendaRepository;
 
 /**
- * @file SqliteConfiguracionAgendaRepository.java
+ * @file PostgreSQLConfiguracionAgendaRepository.java
  * @brief Adaptador de persistencia que implementa
- *        {@link ConfiguracionAgendaRepository} sobre SQLite vía Spring Data JPA.
+ *        {@link ConfiguracionAgendaRepository} sobre PostgreSQL vía Spring Data JPA.
  *
  * @details
  * Actúa como puente entre el dominio y la capa de persistencia: delega el
@@ -25,7 +25,7 @@ import com.piedrazul.api.scheduling.repository.ConfiguracionAgendaRepository;
  * los ids.
  */
 @Repository
-public class SqliteConfiguracionAgendaRepository implements ConfiguracionAgendaRepository {
+public class PostgreSQLConfiguracionAgendaRepository implements ConfiguracionAgendaRepository {
 
     private final SpringDataConfiguracionAgendaRepository springDataRepository;
     private final ConfiguracionAgendaEntityMapper mapper;
@@ -36,7 +36,7 @@ public class SqliteConfiguracionAgendaRepository implements ConfiguracionAgendaR
      * @param springDataRepository Repositorio Spring Data subyacente.
      * @param mapper               Mapper entre dominio y entidad JPA.
      */
-    public SqliteConfiguracionAgendaRepository(SpringDataConfiguracionAgendaRepository springDataRepository,
+    public PostgreSQLConfiguracionAgendaRepository(SpringDataConfiguracionAgendaRepository springDataRepository,
                                                 ConfiguracionAgendaEntityMapper mapper) {
         this.springDataRepository = springDataRepository;
         this.mapper = mapper;

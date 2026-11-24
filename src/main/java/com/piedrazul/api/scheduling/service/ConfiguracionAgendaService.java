@@ -25,7 +25,7 @@ import com.piedrazul.api.scheduling.repository.DoctorRepository;
  *
  * @details
  * Depende únicamente de las interfaces {@link DoctorRepository} y
- * {@link ConfiguracionAgendaRepository}: no conoce JPA, SQLite ni que los
+ * {@link ConfiguracionAgendaRepository}: no conoce JPA, PostgreSQL ni que los
  * datos de doctor estén sembrados en memoria.
  *
  * Responsabilidades que asume este servicio (y que no pueden cubrir los Value

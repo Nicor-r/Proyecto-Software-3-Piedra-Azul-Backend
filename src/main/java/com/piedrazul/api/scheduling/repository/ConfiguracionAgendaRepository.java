@@ -11,7 +11,7 @@ import com.piedrazul.api.scheduling.domain.ConfiguracionAgenda;
  * Define el contrato que debe cumplir cualquier implementación de persistencia
  * de configuraciones de agenda. Al vivir en el dominio, desacopla al servicio
  * de la tecnología concreta de almacenamiento (por ejemplo, la implementación
- * SQLite en {@code infrastructure}).
+ * PostgreSQL en {@code infrastructure}).
  */
 public interface ConfiguracionAgendaRepository {
 
