@@ -28,6 +28,7 @@ import com.piedrazul.api.citas.dto.AgendarCitaRequest;
 import com.piedrazul.api.citas.dto.CitaDTO;
 import com.piedrazul.api.citas.dto.CitaDetalleDTO;
 import com.piedrazul.api.citas.dto.FranjaDTO;
+import com.piedrazul.api.citas.dto.ReagendarCitaRequest;
 import com.piedrazul.api.citas.exception.FranjaNoDisponibleException;
 import com.piedrazul.api.citas.infrastructure.repository.CitaRepository;
 import com.piedrazul.api.iam.domain.User;
@@ -403,4 +404,43 @@ public class CitaService {
                         .map(HistorialPacienteService::formatearNombreTerapista)
                         .orElse(medicoId));
     }
+
+    // Cancelación base
+    private void ejecutarCancelacion(Cita cita, String motivo) {
+        cita.cancelarPorReagendamiento(motivo, LocalDateTime.now());
+        citaRepository.save(cita);
+        log.info("Cita cancelada id={} paciente={} motivo={}",
+                cita.getId(), cita.getPacienteId(), motivo);
+    }
+
+    //Reagendamiento de cita por parte del médico/terapista
+    @Transactional
+    public CitaDTO reagendarCitaPorMedico(ReagendarCitaRequest request, String medicoId) {
+        Cita cita = citaRepository.findById(request.getCitaId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cita no encontrada"));
+
+        if (!cita.getMedicoId().equals(medicoId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "No tiene permiso para reagendar esta cita");
+        }
+
+        // Verificar que la cita esté en estado PENDIENTE antes de permitir la cancelación
+        if (cita.getEstado() != EstadoCita.PENDIENTE) {
+            throw new IllegalStateException(
+            "Solo se pueden modificar citas pendientes");
+        }
+
+        // Cancelar la cita actual
+        ejecutarCancelacion(cita, "Reagendada por el médico a cargo del paciente");
+
+        // Agendar la nueva cita
+        AgendarCitaRequest nuevaCita = new AgendarCitaRequest(medicoId, request.getNuevaFecha(), request.getNuevaHora());
+        CitaDTO infoNuevaCita = this.agendarCita(nuevaCita, cita.getPacienteId());
+        log.info("Cita reagendada id={} paciente={} medico={} fecha={} hora={}",
+                infoNuevaCita.getId(), infoNuevaCita.getPacienteId(), medicoId,
+                request.getNuevaFecha(), request.getNuevaHora());
+        return infoNuevaCita;
+    }
+    
 }
