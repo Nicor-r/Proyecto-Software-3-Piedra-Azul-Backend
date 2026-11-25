@@ -1,0 +1,18 @@
+# Salida de compilación y control de versiones
+target/
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Bases de datos locales y archivos de desarrollo
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3-query
+
+# Secretos locales
+.env
